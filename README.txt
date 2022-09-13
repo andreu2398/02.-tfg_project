@@ -1,3 +1,14 @@
+THIS PROJECT IS NOT COMPLETELY UPLOADED
+Some of the contents weight so much that can not be included in this repository. This is just a show-room of some of the code I wrote when doing the project.
+If you wanted to see the complete project or ask me any questions about it, email me at andreu2398@hotmail.com with the Subject "2.-tfg_project".
+
+ESTE PROYECTO NO ESTÁ SUBIDO AL COMPLETO
+Algunos de los ficheros pesaban tanto que no se han podido incluir en este repositorio. Esto es tan sólo una muestra de algunos de los códigos que escribí en el momento de hacer el proyecto.
+Si deseas ver el proyecto al completo o preguntarme cualquier pregunta sobre el mismo, mándame un email a andreu2398@hotmail.com con el Asunto "2.-tfg_project".
+
+
+
+
 Per obtindre el resultat desitjat és necessari tindre instal·lat el programa RStudio i els packages
 utilitzats en el fitxer .R anomenat tfg_castellano.R o tfg_valencia.R.
 
