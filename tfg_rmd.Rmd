@@ -1,0 +1,1253 @@
+---
+title: "CARACTERITZACIÓ GENERAL DEL MERCAT DE TREBALL EN ESPANYA (Períodes 1978, 2003 i 2019)"
+author: "Andreu A. Balastegui Tomàs"
+date: "13/6/2020"
+output: 
+  html_document:
+    theme: cosmo
+    toc: yes
+    toc_float: yes
+params:
+  ciclo: 189
+  año: 2019
+---
+
+<style>
+body {
+text-align: justify}
+</style>
+
+```{r chunk_setup, include=FALSE}
+knitr::opts_chunk$set(eval = TRUE, message = FALSE, warning = FALSE, 
+                      cache = FALSE, cache.path = "/caches/", comment = "#>")
+```
+
+```{r options_setup , echo = FALSE}
+#Packages
+{
+library(rio)
+library(dplyr)
+library(tidyr)
+library(tidyverse)
+library(textclean)
+library(glue)
+library(DT)
+library(ggthemr)
+library(ggplot2)
+library(gganimate)
+library(plotly)
+library(knitr)
+library(data.table)
+library(kableExtra)
+library(gt)
+library(gridExtra)
+library(RColorBrewer)
+library(fmsb)
+library(radarchart)
+options(scipen=999 , digits = 6)
+df <- import("./archivo_bueno2.csv")
+df <- df %>% mutate(SEXO1 = gsub(x = SEXO1 , pattern = 1 , replacement = "Home")) %>%
+  mutate(SEXO1 = gsub(x = SEXO1 , pattern = 6 , replacement = "Dona"))
+}
+
+```
+
+```{r 1 , echo = FALSE}
+#Parametros
+{
+ciclo_elegido <- params$ciclo
+año_elegido <- params$año
+}
+```
+
+## <FONT COLOR="darkred">1. INTRODUCCIÓ</FONT>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Aquest treball de fi de grau (TFG) està relacionat amb les pràctiques externes que estic realitzant durant aquest segon quadrimestre de quart curs del Grau en Economia, les quals són en un observatori de dades de l’Ajuntament de València dins de la institució “València Activa”. Ací, com a tècnic de l’observatori en pràctiques, analitze dades internes de la pròpia institució “València Activa” per conèixer les febleses i fortaleses de la institució i poder fer-la més eficient. Però, sobretot, realitze informes caracteritzant els diversos mercats de treball de cada barri de la ciutat de València, o directament analitzant el mercat de treball de la ciutat en el seu conjunt per comparar-lo amb el d’altres ciutats o amb la resta de la Comunitat Valenciana o Espanya.    
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L’objectiu d’aquests informes és ajudar a elaborar la política de promoció de l’ocupació més eficient i eficaç per a cada barri, a banda de donar informació més accessible per els ciutadans, empreses o institucions sobre mercat laboral a nivell de barris. Sense el treball de l’observatori de “València Activa” no estarien tan accessibles com ho són ara. Dins de l’equip de tècnics, la meua funció és fer més atractives les visualitzacions dels informes i les pròpies dades, alhora que s’agilitzen els processos d’elaboració d’informes i d’anàlisi de dades. Per a tal fi, he aplicat multitud de coneixements adquirits durant el Grau en Economia en quant a mercat de treball (conceptes, funcionament, característiques del mercat de treball Espanyol, peculiaritats respecte d’altres mercats, etcètera), però també hi he aplicat els coneixements apresos a l’assignatura de *“Programació i Maneig de Dades en l’Era del Big Data”*, que m’han permès realitzar el meu treball d’una manera més eficient (automatitzant informes o anàlisis d’estadístiques) programant amb R.    
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;El cas és que em resulta prou interessant ampliar l’anàlisi de les meues pràctiques a nivell d’Espanya i les seues Comunitat Autònomes, però m’he trobat que aquesta caracterització ja ha sigut feta abans per *Luís Toharia* en el seu article *“El mercado de Trabajo en España, (1978 a 2003)”*. No he trobat un treball semblant a dates d’avui així que, aprofitant els coneixements, habilitats i fonts adquirides a les pràctiques externes, tractaré d’actualitzar l’article de *Luís Toharia* al present.    
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Així doncs, l’objecte d’anàlisi és el mercat laboral espanyol. En el moment de realització d’aquest treball s’està produint un *shock* en la forma de viure a la que estem acostumats a causa del COVID-19 que, segons estimacions, com les del Fons Monetari Internacional (FMI, 2020)[^1]  causarà una gran caiguda de la producció en la gran majoria dels països, en els quals s’inclouen Espanya i la resta dels països europeus. Açò contrasta molt amb les previsions que es tenien per al 2020 sense tindre en compte l’expansió tan ràpida del COVID-19 com les del Banc Central Europeu (BCE, 2020) en que pronosticaven un creixement, que tot i ser lleuger, era positiu.[^2]    
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Aquesta situació ens deixa, per tant, en una situació d’alta incertesa sobre el mercat de treball, ja que, com hem vist, les prediccions canvien molt en poc de temps i no es pot fer una avaluació precisa del mateix, de moment.    
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;De tota manera, donat que el nostre anàlisi és entre anys, les dades que es presenten són del quart trimestre de cada any, cosa que limita l’anàlisi, pel moment, al 2019.    
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Per tant, aquest treball té dos objectius principals. En primer lloc, tractar de completar a dates d’avui el treball realitzat per Toharia (2003) en el seu article *“El mercado de Trabajo en España, (1978 a 2003)”*, comparant aquestes dues situacions amb Espanya en 2019. Tractaré de veure si les tendències que es donaven des del 1978 al 2003 es mantenen o no i, de la mateixa manera que feia Toharia, donaré una explicació econòmica als esdeveniments viscuts a la societat i economia espanyola. La finalitat és que a l’acabar de llegir aquest treball, el lector ha de tindre una visió general de com és el mercat laboral espanyol i quins són els canvis més importants que ha viscut des de 1978 i 2003 al present. En segon lloc, utilitzar instruments moderns per a realitzar aquest treball, ja que aquests permeten una major flexibilitat a l’hora de canviar entre dates (realitzar l’anàlisi en 2018 enlloc de 2019) o canviar entre zona d’anàlisi (Comunitat Valenciana enlloc de Espanya, per exemple). Aquests instruments permeten ferramentes útils com la interactivitat o animació, que faciliten la visualització dels gràfics, l’adaptació de la grandària dels objectes i lletra a tot tipus de dispositius, la replicació del treball, etc. Aquestes ferramentes canviaran la forma de fer els treballs científics i, dins de les possibilitats d’un TFG, utilitzar-les en la mesura del possible per fer el treball més accessible i replicable, és un dels objectius d’aquest treball.    
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Aquestes ferramentes que vaig a utilitzar s’han impartit a l’assignatura “Programació i maneig de dades en l’era del Big Data” i, en resum, és utilitzar el programa RStudio i el seu llenguatge de programació R per descarregar totes les enquestes de l’EPA, filtrar les dades que ens interessen i elaborar els gràfics pertinents (normalment semblants als que fa Toharia per poder comparar millor les dades i els treballs). Açò permet realitzar aquest treball amb el valor afegit de poder ser reproduïble a altres anys o llocs (que siga reproduïble és un valor molt important de la programació, si no el que més). Aquesta forma de realitzar-lo també suposa un canvi de paradigma en quant a com es fa tradicionalment, que és consultar les dades en l’INE. A diferència, en aquest treball es descarreguen totes les enquestes i s’extrauen les dades de les mateixes. Aquest canvi metodològic no ha suposat un canvi radical en l’elecció de les variables a estudiar (perquè es busca que les dades siguen comparables a les de 1978 i 2003), però aquesta manera de realitzar-lo permet una major flexibilitat a l’hora d’elegir les variables (es poden crear definicions més àmplies o més reduïdes d’aturat, ocupat, actiu o inactiu que les que presenta l’EPA) per aplegar a les nostres conclusions.    
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“Com ha canviat el mercat laboral espanyol en el període de 25 anys transcorregut des de que es va aprovar la Constitució a finals de 1978?”, es preguntà Luis Toharia en 2003. Aquesta pregunta li va dur a fer el seu treball en el qual comparava la situació del mercat laboral en 1978 amb la del 2003. Resumidament, podem dir que la seua conclusió va ser que **sí ha canviat, i molt**. No és estrany que arribés a aquesta conclusió, doncs els canvis importants viscuts van ser tant quantitatius com qualitatius. Destaca el desenvolupament en l’àmbit institucional amb l’exemple de la negociació col·lectiva, la protecció per desocupació, el mecanisme d’ajust de plantilles de les empreses, la formació ocupacional, etcètera, a més a més, de la implantació de l’Estat del Benestar (sanitat, educació i pensions), que han sigut fonamentals perquè els canvis que ell detecta hagen sigut possibles.    
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*“Ha seguit canviant el mercat laboral espanyol des de 2003?”*, és la pregunta que ens plantegem en aquest TFG. Des del 2003 s’han viscut esdeveniments com l’assentament de l’Euro, la bombolla immobiliària, el seu esclafit i la posterior Gran Crisi de 2008. Actualment, a la data de realitzar aquest treball ha esclatat una crisi sanitària que ens ha obligat a adoptar mesures com les restriccions a la mobilitat. Algunes previsions diuen que en EEUU sobrepassarà en qüestions de taxes de desocupació a la de 1929.[^3]  Les peticions de prestacions per desocupació han trencat l’anterior rècord de 695.000 de 1982, sumant 3,3 milions de peticions al moment de fer el treball, però en Europa (i Espanya en concret) el destí no serà molt diferent i tot apunta a que les conseqüències sobre el mercat de treball seran iguals o superiors a EEUU. A més a més, la Unió Europea es troba amb la dificultat afegida de prendre les mesures adients sense erosionar la confiança dels països membres i  l’ Euro.    
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Potser els canvis institucionals viscuts entre el 1978 i el 2003 siguen necessàriament insuperables per els de 2003 al 2019, ja que esdeveniments com establir una democràcia o entrar en la (actualment coneguda com a) Unió Europea segurament siguen molt més decisius que els viscuts des del 2003 al 2019. Tot i això, amb aquest anàlisi 1978-2003-2019 podem veure si les tendències ja vistes amb l’anàlisi 1978-2003 del mercat de treball espanyol es mantenen o canvien.    
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Com ja s’ha dit abans, aquest treball tracta de donar una visió general del mercat de treball espanyol en 2019 i com ha canviat respecte dels anys 1978 i 2003, per això, el treball es dividirà en cinc seccions més enllà de la secció introductòria. En la segona secció es fa una caracterització general del context del mercat laboral aportant dades sobre la població, societat i els canvis viscuts. En la tercera, amb la finalitat d’entendre les magnituds principals sobre les que parlem i les seues evolucions, es donen una sèrie de dades d’aspecte general tant en valor absolut com en taxes sobre activitat, ocupació i atur. En la quarta secció s’analitzen els canvis en les taxes d’activitat i la transcendència social i econòmica dels mateixos. En la cinquena, es fa un focus sobre l’ocupació i s’entren a veure aspectes concrets sobre el tipus d’ocupació. En la sisena secció, s’analitza l’atur d’una manera més detinguda per obtenir conclusions més precises sobre aquest aspecte del mercat de treball. Per últim, es presenten les principals conclusions del treball.    
+
+
+## <FONT COLOR="darkred">2. ASPECTES DEMOGRÀFICS DEL MERCAT DE TREBALL</FONT> 
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Per començar a dibuixar la imatge del mercat laboral, hem de fer un repàs a com ha canviat la població: el volum d’habitants, si la majoria són joves o majors de 16 anys o la distribució entre homes i dones.    
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;En l’aspecte demogràfic, el canvi ha sigut colossal. Des de l’any 1978 a 2003 hi ha hagut un canvi gran en quant a població major de 16 anys, en part degut a l’envelliment de la població espanyola i en menor part, a l’arribada d’estrangers. Aquest creixement és sorprenent, però quasi és més sorprenent que des de l’any 2003 al 2019 seguira augmentant un 15 %, ja que la població jove respecte de la adulta s’havia reduït, pel que quedava menys marge per al creixement. Açò s’explica per l’arribada d’immigrants al començament del segle XXI fins a l’any 2008, que en la gran majoria era gent en edat de treballar. Per tant, tot i que siga extraordinari, és comprensible que la població espanyola augmentara un 51,57% en uns 40 anys.    
+
+
+```{r 2 , echo = FALSE}
+# 1. Taula majors
+{
+aa <- df %>% filter(CICLO == ciclo_elegido) %>%
+    mutate(ANO = 2019) %>%
+    group_by(SEXO1 , NIVEL , ANO) %>%
+    summarise("personas" = sum(FACTOREL , na.rm = FALSE)) %>%
+    ungroup()
+newRow1 <- data.frame(SEXO1 = c("Dona" , "Dona" , "Home" , "Home") , NIVEL = c(1 , 2 , 1 , 2) , ANO = as.numeric(c("2003" , "2003" , "2003" , "2003")) , personas = as.numeric(c("17579800" , "3071700" , "16595700" , "3276300")))
+newRow2 <- data.frame(SEXO1 = c("Dona" , "Dona" , "Home" , "Home") , NIVEL = c(1 , 2 , 1 , 2) , ANO = as.numeric(c("1978" , "1978" , "1978" , "1978")) , personas = as.numeric(c("13489900" , "4871500" , "12522300" , "5122200")))
+aa <- bind_rows(aa , newRow1 , newRow2) %>%
+    pivot_wider(names_from = SEXO1 , values_from = personas)
+aa <- aa %>% mutate(Total = Home + Dona) %>%
+    pivot_longer(names_to = "SEXO1" , values_to = "personas" , cols = 3:5)
+x <- as.numeric(c(1978 , 2003 , 2019))
+for (ii in x) {
+    zz <- aa %>% filter(NIVEL == 1) %>%
+    pivot_wider(names_from = SEXO1 , values_from = personas) %>%
+    arrange(-desc(ANO)) %>%
+    select(ANO , Total , Home , Dona) %>%
+    filter(ANO == ii) %>%
+    mutate(Total = Total/1000 , Home = Home/1000 , Dona = Dona/1000)
+
+    assign(x = paste0("zz" , {ii}) , value = zz)
+}
+aa1 <- aa %>% filter(NIVEL == 1) %>%
+    pivot_wider(names_from = SEXO1 , values_from = personas) %>%
+    mutate(ANO = (as.character(ANO))) %>%
+    select(ANO , Total , Home , Dona) %>%
+    arrange(ANO) %>%
+    mutate(Total = Total/1000 , Home = Home/1000 , Dona = Dona/1000)
+dif19.03 <- data.frame(ANO = "Diferència 2019 - 2003" , Total = zz2019$Total - zz2003$Total , Home = zz2019$Home - zz2003$Home , Dona = zz2019$Dona - zz2003$Dona)
+dif_por19.03 <- data.frame(ANO = "Diferència % 2019 - 2003" , Total = (zz2019$Total - zz2003$Total)/zz2003$Total , Home = (zz2019$Home - zz2003$Home)/zz2003$Home , Dona = (zz2019$Dona - zz2003$Dona)/zz2003$Dona)
+dif19.78 <- data.frame(ANO = "Diferència 2019 - 1978" , Total = zz2019$Total - zz1978$Total , Home = zz2019$Home - zz1978$Home , Dona = zz2019$Dona - zz1978$Dona)
+dif_por19.78 <- data.frame(ANO = "Diferència % 2019 - 1978" , Total = (zz2019$Total - zz1978$Total)/zz1978$Total , Home = (zz2019$Home - zz1978$Home)/zz1978$Home , Dona = (zz2019$Dona - zz1978$Dona)/zz1978$Dona)
+aa1 <- bind_rows(aa1 , dif19.78 , dif_por19.78 , dif19.03 , dif_por19.03)
+
+options(digits = 6)
+
+p <- aa1 %>% gt() %>%
+    tab_header(title = md("**QUADRE 1: EVOLUCIÓ DE LA POBLACIÓ DE 16 ANYS O MÉS EN ESPANYA, 1978, 2003 Y 2019** *(En milers)*")) %>%
+    cols_label(ANO = "Any" , Total = "Ambdós sexes" , Home = "Homes" , Dona = "Dones") %>%
+    fmt_percent(columns = c("Total" , "Home" , "Dona") , rows = c(5 , 7)) %>%
+    tab_source_note(source_note = md("***Font:** INE, EPA*<br>*Elaboració pròpia*")) %>%
+    tab_style(style = cell_text(color = "firebrick", size = "large", align = "center"), locations = cells_title()) %>%
+    tab_style(style = cell_fill(color = "gray95"), locations = cells_title()) %>%
+    tab_style(style = cell_text(color = "firebrick", size = "normal", align = "center" , weight = "bolder"), locations = cells_column_labels(columns = c("ANO" , "Total" , "Home" , "Dona"))) %>%
+    tab_style(style = cell_fill(color = "gray95"), locations = cells_column_labels(columns = c("ANO" , "Total" , "Home" , "Dona"))) %>%
+    tab_style(style = cell_text(weight = "bold"), locations = cells_data(columns = c("ANO" , "Total" , "Home" , "Dona"), rows = c(5 , 7))) %>%
+    tab_style(style = cell_fill(color = "gray95"), locations = cells_data(columns = "ANO")) %>%
+    tab_style(style = cell_text(color = "firebrick" , size = "normal" , align = "center" , weight = "bolder"), locations = cells_data(columns = "ANO"))
+
+p
+}
+```
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Però és més interessant, si cap, la diferència de creixement entre els menors de 16 anys i el majors, ja que mentre que els majors de 16 han augmentat un 51,6% des de 1978, els menors de 16 han baixat un 26,3%. Aquest canvi suposa una senyal de l’envelliment que viu la població espanyola i de la baixa taxa de natalitat. Tot i això, el canvi respecte de 2003 ens mostra que aquesta tendència s’ha estabilitzat una mica (que no revertit), ja que el creixement de la població menor i major és semblant des de 2003.    
+
+
+
+```{r 3 , echo = FALSE}
+# 2. Taula menors
+{
+aa <- df %>% filter(CICLO == ciclo_elegido) %>%
+    mutate(ANO = 2019) %>%
+    group_by(SEXO1 , NIVEL , ANO) %>%
+    summarise("personas" = sum(FACTOREL , na.rm = FALSE)) %>%
+    ungroup()
+newRow1 <- data.frame(SEXO1 = c("Dona" , "Dona" , "Home" , "Home") , NIVEL = c(1 , 2 , 1 , 2) , ANO = as.numeric(c("2003" , "2003" , "2003" , "2003")) , personas = as.numeric(c("17579800" , "3071700" , "16595700" , "3276300")))
+newRow2 <- data.frame(SEXO1 = c("Dona" , "Dona" , "Home" , "Home") , NIVEL = c(1 , 2 , 1 , 2) , ANO = as.numeric(c("1978" , "1978" , "1978" , "1978")) , personas = as.numeric(c("13489900" , "4871500" , "12522300" , "5122200")))
+aa <- bind_rows(aa , newRow1 , newRow2) %>%
+    pivot_wider(names_from = SEXO1 , values_from = personas)
+aa <- aa %>% mutate(Total = Home + Dona) %>%
+    pivot_longer(names_to = "SEXO1" , values_to = "personas" , cols = 3:5)
+x <- as.numeric(c(1978 , 2003 , 2019))
+for (ii in x) {
+    zz <- aa %>% filter(NIVEL == 2) %>%
+    pivot_wider(names_from = SEXO1 , values_from = personas) %>%
+    arrange(-desc(ANO)) %>%
+    select(ANO , Total , Home , Dona) %>%
+    filter(ANO == ii) %>%
+    mutate(Total = Total/1000 , Home = Home/1000 , Dona = Dona/1000)
+
+    assign(x = paste0("zz" , {ii}) , value = zz)
+}
+aa1 <- aa %>% filter(NIVEL == 2) %>%
+    pivot_wider(names_from = SEXO1 , values_from = personas) %>%
+    mutate(ANO = (as.character(ANO))) %>%
+    select(ANO , Total , Home , Dona) %>%
+    arrange(ANO) %>%
+    mutate(Total = Total/1000 , Home = Home/1000 , Dona = Dona/1000)
+dif19.03 <- data.frame(ANO = "Diferència 2019 - 2003" , Total = zz2019$Total - zz2003$Total , Home = zz2019$Home - zz2003$Home , Dona = zz2019$Dona - zz2003$Dona)
+dif_por19.03 <- data.frame(ANO = "Diferència % 2019 - 2003" , Total = (zz2019$Total - zz2003$Total)/zz2003$Total , Home = (zz2019$Home - zz2003$Home)/zz2003$Home , Dona = (zz2019$Dona - zz2003$Dona)/zz2003$Dona)
+dif19.78 <- data.frame(ANO = "Diferència 2019 - 1978" , Total = zz2019$Total - zz1978$Total , Home = zz2019$Home - zz1978$Home , Dona = zz2019$Dona - zz1978$Dona)
+dif_por19.78 <- data.frame(ANO = "Diferència % 2019 - 1978" , Total = (zz2019$Total - zz1978$Total)/zz1978$Total , Home = (zz2019$Home - zz1978$Home)/zz1978$Home , Dona = (zz2019$Dona - zz1978$Dona)/zz1978$Dona)
+aa1 <- bind_rows(aa1 , dif19.78 , dif_por19.78 , dif19.03 , dif_por19.03)
+
+p <- aa1 %>% gt() %>%
+    tab_header(title = md("**QUADRE 2: EVOLUCIÓ DE LA POBLACIÓ MENOR DE 16 ANYS EN ESPANYA, 1978, 2003 Y 2019** *(En milers)*")) %>%
+    cols_label(ANO = "Any" , Total = "Ambdós sexos" , Home = "Homes" , Dona = "Dones") %>%
+    fmt_percent(columns = c("Total" , "Home" , "Dona") , rows = c(5 , 7) ) %>%
+    tab_source_note(source_note = md("***Font:** INE, EPA*<br>*Elaboración propia*")) %>%
+    tab_style(style = cell_text(color = "firebrick", size = "large", align = "center"), locations = cells_title()) %>%
+    tab_style(style = cell_fill(color = "gray95"), locations = cells_title()) %>%
+    tab_style(style = cell_text(color = "firebrick", size = "normal", align = "center" , weight = "bolder"), locations = cells_column_labels(columns = c("ANO" , "Total" , "Home" , "Dona"))) %>%
+    tab_style(style = cell_fill(color = "gray95"), locations = cells_column_labels(columns = c("ANO" , "Total" , "Home" , "Dona"))) %>%
+    tab_style(style = cell_text(weight = "bold"), locations = cells_data(columns = c("ANO" , "Total" , "Home" , "Dona"), rows = c(5 , 7))) %>%
+    tab_style(style = cell_fill(color = "gray95"), locations = cells_data(columns = "ANO")) %>%
+    tab_style(style = cell_text(color = "firebrick" , size = "normal" , align = "center" , weight = "bolder"), locations = cells_data(columns = "ANO"))
+
+p
+}
+```
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Veure aquest gran resum de la població espanyola està bé per fer-se una idea de com ha canviat i com pot canviar en el futur, però centrant-nos ja en els potencials participants de la força laboral (majors de 16 anys), podem veure en el següent gràfic, que representa la distribució de la població espanyola per grups quinquennals d’edat, l’envelliment abans ja intuït. Any rere any, l’extrem de la dreta (acumulat de la població amb potencial dret de cobrar pensió), és a dir, els més majors, és més alt. Els majors de 65 homes han passat de representar un 13,1% del total de persones majors de 16 anys a un 20,4% i d’un 17,4% a un 24,65% en el cas de les dones. Aquesta franja d’edat és prou rellevant ja que és, aproximadament l’edat a la que es jubila la majoria de gent i més avant veurem com la taxa d’activitat d’aquesta edat és prou més reduïda que la de la resta de majors de 16 anys. Si ens fixem en qualsevol altra zona del gràfic, la situació no és molt diferent. Cada línia fa una mena d’ona i cada cinc anys, aquesta ona es troba més a la dreta. Avui en dia es troba entre els 40 i 54, però en 2003 es trobava entre els 20 i els 44 i en 1978 es trobava en els menor de 16 i els de 29 aproximadament. És previsible que durant els pròxims anys aquesta ona continue desplaçant-se cap a la dreta a mesura que la població quedarà més i més envellida. Açò presenta reptes en el present, però en presentarà molts més en el futur (mantindre major taxa de pensionistes sobre menor taxa d’ocupació).    
+
+
+<input type=button class=hideshow></input>
+
+```{r 4 , echo = FALSE}
+# 3. Distribución población
+{
+y <- c("Home" , "Dona")
+
+for (jj in y) {
+  ii <- 133
+
+  zz1 <- df %>% filter(CICLO == ii , SEXO1 == jj , NIVEL == 1) %>%
+    summarise("personas" = sum(FACTOREL , na.rm = FALSE)) %>%
+    as.numeric()
+  aa <- df %>% filter(CICLO == ii , SEXO1 == jj , NIVEL == 1) %>%
+    group_by(EDAD5 , CICLO , SEXO1) %>%
+    summarise("personas" = ((sum(FACTOREL , na.rm = FALSE))*100)/zz1) %>%
+    ungroup()
+
+  x <- c(153 , 173 , ciclo_elegido)
+
+  for (ii in x) {
+    zz1 <- df %>% filter(CICLO == ii , SEXO1 == jj , NIVEL == 1) %>%
+      summarise("personas" = sum(FACTOREL , na.rm = FALSE)) %>%
+      as.numeric()
+    aa1 <- df %>% filter(CICLO == ii , SEXO1 == jj , NIVEL == 1) %>%
+      group_by(EDAD5 , CICLO , SEXO1) %>%
+      summarise("personas" = ((sum(FACTOREL , na.rm = FALSE))*100)/zz1) %>%
+      ungroup()
+
+    aa <- bind_rows(aa , aa1)
+    }
+  assign(x = paste0("aa_" , jj) , value = aa)
+}
+
+aa_def <- bind_rows(aa_Home , aa_Dona)
+aa_def <- aa_def %>% mutate(Any = gsub(x = CICLO , pattern = 133 , replacement = "2005")) %>%
+  mutate(Any = gsub(x = Any , pattern = 153 , replacement = "2010")) %>%
+  mutate(Any = gsub(x = Any , pattern = 173 , replacement = "2015")) %>%
+  mutate(Any = gsub(x = Any , pattern = ciclo_elegido , replacement = "2019")) %>%
+  mutate(Edat = EDAD5 , Percentatge = personas , Sexo = SEXO1) %>%
+  select(Any , Edat , Percentatge , Sexo)
+
+newRow1 <- data.frame(Any = as.character(c(1978 , 1978 , 1978 , 1978 , 1978 , 1978 , 1978 , 1978 , 1978 , 1978 , 1978)) , Edat = c(16 , 20 , 25 , 30 , 35 , 40 , 45 , 50 , 55 , 60 , 65) , Percentatge = c(9.8 , 10.7 , 9.8 , 9.5 , 8.2 , 8.8 , 9.2 , 8.4 , 7 , 5.5 , 13.1) , Sexo = c("Home" , "Home" , "Home" , "Home" , "Home" , "Home" , "Home" , "Home" , "Home" , "Home" , "Home"))
+
+newRow2 <- data.frame(Any = as.character(c(1978 , 1978 , 1978 , 1978 , 1978 , 1978 , 1978 , 1978 , 1978 , 1978 , 1978)) , Edat = c(16 , 20 , 25 , 30 , 35 , 40 , 45 , 50 , 55 , 60 , 65) , Percentatge = c(8.9 , 9.9 , 9.1 , 8.7 , 7.5 , 8.4 , 8.7 , 8.1 , 7.1 , 6.2 , 17.4) , Sexo = c("Dona" , "Dona" , "Dona" , "Dona" , "Dona" , "Dona" , "Dona" , "Dona" , "Dona" , "Dona" , "Dona"))
+
+newRow3 <- data.frame(Any = as.character(c(2003 , 2003 , 2003 , 2003 , 2003 , 2003 , 2003 , 2003 , 2003 , 2003 , 2003)) , Edat = c(16 , 20 , 25 , 30 , 35 , 40 , 45 , 50 , 55 , 60 , 65) , Percentatge = c(5.8 , 8.9 , 10.6 , 10.6 , 10.2 , 9.1 , 8 , 7.3 , 6.7 , 5.5 , 17.3) , Sexo = c("Home" , "Home" , "Home" , "Home" , "Home" , "Home" , "Home" , "Home" , "Home" , "Home" , "Home"))
+
+newRow4 <- data.frame(Any = as.character(c(2003 , 2003 , 2003 , 2003 , 2003 , 2003 , 2003 , 2003 , 2003 , 2003 , 2003)) , Edat = c(16 , 20 , 25 , 30 , 35 , 40 , 45 , 50 , 55 , 60 , 65) , Percentatge = c(5.1 , 8 , 9.5 , 9.6 , 9.4 , 8.6 , 7.7 , 7 , 6.7 , 5.7 , 22.7) , Sexo = c("Dona" , "Dona" , "Dona" , "Dona" , "Dona" , "Dona" , "Dona" , "Dona" , "Dona" , "Dona" , "Dona"))
+
+aa_def <- bind_rows(aa_def , newRow1 , newRow2 , newRow3 , newRow4)
+
+options(digits = 3)
+
+p <- ggplot(data = aa_def , mapping = aes(x = Edat , y = Percentatge , colour = Any)) +
+  geom_line() +
+  labs(title = "GRÀFIC 1: DISTRIBUCIÓ DE LA POBLACIÓ EN ESPANYA SEGONS EDAT" , caption = "Font: INE, EPA. Elaboració pròpia" , x = NULL , y = NULL) +
+  theme(plot.caption = element_text(face = "italic", colour = "gray24") ,
+    plot.title = element_text(size = 16 , face = "bold", colour = "firebrick") ,
+    axis.text.x = element_text(angle = 45, hjust = 1) ,
+    panel.background = element_rect(fill = "gray80", colour = "snow4")) +
+  facet_wrap(vars(Sexo)) +
+  scale_x_continuous(breaks = seq(15 , 65 , 10) , labels = c("15-19" , "25-29" , "35-39" , "45-49" , "55-59" , "65 y más")) +
+  scale_y_continuous(breaks = seq(5 , 25 , 2.5) , labels = c("5%" , "7.5%" , "10%" , "12.5%" , "15%" , "17.5%" , "20%" , "22.5%" , "25%")) +
+  labs(colour = NULL) +
+  scale_color_brewer(palette = "YlOrRd")
+
+ggplotly(p , tooltip = c("Any" ,  "Percentatge" , "Edat"))
+}
+```
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L’única resposta que ens queda per fer front a aquests reptes és la productivitat del treball; només a través de treballadors més productius es pot mantenir el nivell de vida dels pensionistes actuals i futurs. Tot i que alguns autors com Michael Spence (1973) defenen que gran part de la funció de la educació és de senyalització de la productivitat del treballador (la qual és, en gran part, innata), existeix un gran consens en que l’educació no només funciona com a senyal, sinó també com a motor d’augment de la productivitat del treballador amb formació. Autors com Gary Becker (1962), Jacob Mincer (1958) i Theodore Schultz (1972), amb la teoria del Capital Humà defenen que el capital humà (conjunt de trets com la intel·ligència, el talent, les habilitats, el coneixement, l’experiència, l’entrenament, i el saber que cada individu té i, en conjunt, té la societat) és un element clau per el creixement econòmic i l’augment de la productivitat. Aquesta teoria és perfectament compatible amb models de creixement endogen com el model de Capital Humà de Lucas (1993), en el qual un dels factors de creixement és la inversió en capital humà (com podria ser temps dedicat a l’educació i formació). Açò és així perquè s’entén que el progrés tècnic és endogen i depèn del capital humà existent i del temps invertit en acumular més. No són els únics, inclús Adam Smith (1776.) ja incloïa “les habilitats útils de tots les persones o membres d’una societat” com a un dels quatre tipus de capital fixe, el qual es caracteritza per augmentar els ingressos o beneficis sense augmentar els costos.    
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Tot i que la productivitat del treball depèn d’altres coses com el capital físic per treballador o les millores tecnològiques externes, anem a analitzar si la formació (i, presumiblement, el capital humà) dels treballadors en Espanya ha augmentat des del 1978 i 2003 al 2019.    
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Com veiem al següent gràfic sobre la distribució per nivell d’estudis, l’àrea roja (la de 1978) es troba principalment a la dreta amb gran predominança de l’educació primària. Al 2003, ha canviat prou i es desplaça cap a secundària, formació professional i educació superior, cosa que evidència que de 1978 al 2003 ja hi havia hagut un canvi substancial (cap a menys educació primària i analfabets) en el nivell d’estudis de la població espanyola. Tot i això, el gran canvi que s’observa en l’àrea blava (2019) ens dona a entendre que del 2003 al 2019 ja ha donat temps a que s’ esdevinga un altre gran canvi, reduint-se encara més el percentatge de gent que no té educació o té educació primària i augmentant en gran mesura la població que té educació superior. Del 1978 al 2019 es veu clarament en matèria d’educació el canvi que ha viscut la població espanyola, passant de tindre una gran massa d’analfabets o de persones sense formació (només primària) a una educació secundària obligatòria i prou estesa i un gran pes de l’educació superior.    
+
+
+<FONT COLOR="darkred">GRÀFIC 2: DISTRIBUCIÓ PER NIVELL D'ESTUDIS</FONT>
+
+<input type=button class=hideshow></input>
+
+```{r 5 , echo = FALSE}
+# 4. Distribución por nivel de estudios (spider - radar chart) (no se guarda)
+{
+zz <- df %>% filter(CICLO == ciclo_elegido , NIVEL == 1) %>%
+  summarise(total = sum(FACTOREL , na.rm = FALSE))
+zz <- as.numeric(zz$total)
+
+aa <- df %>% filter(CICLO %in% c(ciclo_elegido) , NIVEL == 1) %>%
+  group_by(NFORMA , CICLO) %>%
+  summarise(Percentatge = sum(FACTOREL , na.rm = FALSE)*100/zz) %>%
+  ungroup() %>%
+  select("Formación" = NFORMA , "2019" = Percentatge) %>%
+  mutate(Formación = gsub(pattern = "AN" , replacement = "Analfabets" , x = Formación)) %>%
+  mutate(Formación = gsub(pattern = "P1" , replacement = "Sense educació" , x = Formación)) %>%
+  mutate(Formación = gsub(pattern = "P2" , replacement = "Primària" , x = Formación)) %>%
+  mutate(Formación = gsub(pattern = "S1" , replacement = "Secondària primera etapa" , x = Formación)) %>%
+  mutate(Formación = gsub(pattern = "SG" , replacement = "Secondària segona etapa" , x = Formación)) %>%
+  mutate(Formación = gsub(pattern = "SP" , replacement = "Formació professional" , x = Formación)) %>%
+  mutate(Formación = gsub(pattern = "SU" , replacement = "Educació superior" , x = Formación)) %>%
+  add_column("2003" = c(3 , 9 , 26 , 24 , 13 , 12 , 13)) %>%
+  add_column("1978" = c(9 , 15 , 56 , 8 , 6 , 1 , 5)) %>%
+  select(1 , 4:2)
+
+chartJSRadar(scores = aa , maxScale = 60 , showToolTipLabel = TRUE)
+}
+```
+
+<CENTER>*Font: INE, EPA. Elaboració pròpia*</CENTER>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Com ja hem dit abans, l’educació és un factor important a l’hora de determinar la productivitat potencial de la força laboral, però no ho és tot: un mercat laboral dinàmic, sectors econòmics productius, el capital per treballador, etcètera, són factors molt importants que ajudaran a determinar la productivitat del treball. Una cosa està clara: l’oferta de treball té un major nivell educatiu. Aquesta massa de treballadors ben formats són fruit d’una gran inversió de l’estat durant anys i si el mercat laboral espanyol no és capaç de donar oportunitats o de no oferir condicions suficientment bones per a aquestes persones molt formades, l’opció que els queda als treballadors amb formació alta serà emigrar. Aquests treballadors són essencials per mantenir i millorar el nivell de vida de tots els espanyols, i més en concret, per sostenir l’estat del benestar.    
+
+
+## <FONT COLOR="darkred">3. ACTIVITAT, OCUPACIÓ I ATUR: DADES GENERALS</FONT>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;En l’apartat anterior s’ha vist d’una manera general com ha canviat la població a Espanya dels anys 1978 i 2003 al 2019. Ara, en aquest apartat es tracten de presentar les xifres que donaran a conèixer d’una manera, encara general, com ha canviat el mercat laboral. Evidentment els canvis que ja hem vist que han ocorregut a la societat com l’envelliment, el creixement demogràfic, l’arribada d’immigrants o l’augment en la formació de la població ens ajudaran a entendre els canvis en el mercat de treball que en aquest apartat es veuen.    
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Es comença veient d’una ullada en els Quadres 3 i 4 les xifres i taxes generals sobre l’activitat, l’ocupació i l’atur al 1978, 2003 i 2019. El primer tret característic que cal ressenyar és que totes les tendències que del 1978 al 2003 s’observaven, continuen al 2019. Com a prou destacables podem dir l’augment dels ocupats i de la població en edat de treballar, i l’augment de la taxa d’activitat de les dones a diferència de la dels homes. Aquestes taxes tendeixen a convergir i si canviaren al mateix ritme que han canviat des de 2003 fins a 2019, acabarien convergint en l’any 2031, aproximadament dins d’uns 11,9 anys. Inclús la taxa de desocupació, que havia divergit des de l’any 1978 al 2003, ha convergit a partir d’eixe any i de seguir convergint al mateix ritme, acabarien per ser iguals en l’any 2027, aproximadament dins d’uns 8,1 anys.    
+
+
+
+```{r 6 , echo = FALSE}
+# 7. Grandes magnitudes de la actividad, el empleo y el paro en españa.
+{
+
+  #Varons
+  {
+aa <- df %>% filter(CICLO == ciclo_elegido , NIVEL == 1) %>%
+  mutate(ANO = 2019) %>%
+  group_by(AOI , ANO , SEXO1) %>%
+  summarise(Total = sum(FACTOREL , na.rm = FALSE)) %>%
+  ungroup()
+
+aa1 <- aa %>% filter(AOI == 3 | AOI == 4) %>%
+  group_by(ANO) %>%
+  summarise(Total = sum(Total , na.rm = FALSE)) %>%
+  mutate(Situación = "Ocupados")
+
+aa2 <- aa %>% filter(AOI == 5 | AOI == 6) %>%
+  group_by(ANO) %>%
+  summarise(Total = sum(Total , na.rm = FALSE)) %>%
+  mutate(Situación = "Aturats")
+
+aa3 <- aa %>% filter(AOI == 3 | AOI == 4 |AOI == 5 | AOI == 6) %>%
+  group_by(ANO) %>%
+  summarise(Total = sum(Total , na.rm = FALSE)) %>%
+  mutate(Situación = "Actius")
+
+aa4 <- aa %>% filter(AOI == 7 | AOI == 8 | AOI == 9) %>%
+  group_by(ANO) %>%
+  summarise(Total = sum(Total , na.rm = FALSE)) %>%
+  mutate(Situación = "Inactius")
+
+aa5 <- aa %>%
+  group_by(ANO) %>%
+  summarise(Total = sum(Total , na.rm = FALSE)) %>%
+  mutate(Situación = "Total majors de 16 anys")
+
+newRow1 <- data.frame(ANO = 1978 , Total = c(12401600 , 877600 , 13279200 , 12733000 , 26012200) , Situación = c("Ocupados" , "Aturats" , "Actius" , "Inactius" , "Total majors de 16 anys"))
+newRow2 <- data.frame(ANO = 2003 , Total = c(16666000 , 2460400 , 19126400 , 15049100 , 34175500) , Situación = c("Ocupados" , "Aturats" , "Actius" , "Inactius" , "Total majors de 16 anys"))
+
+aa_tot <- bind_rows(aa1 , aa2 , aa3 , aa4 , aa5 , newRow1 , newRow2)
+aa_tot <- aa_tot %>% pivot_wider(names_from = ANO , names_prefix = "ano" , values_from = Total) %>%
+  mutate(dif19.03 = ano2019-ano2003 , dif19.78 = ano2019-ano1978) %>%
+  select(Situación , ano1978 , ano2003 , ano2019 , dif19.03 , dif19.78) %>%
+  add_column(Sexo = "Ambdós sexes" , .before = 1)
+}
+
+  #Home
+  {
+aa1 <- aa %>% filter(SEXO1 == "Home") %>%
+  filter(AOI == 3 | AOI == 4) %>%
+  group_by(ANO) %>%
+  summarise(Total = sum(Total , na.rm = FALSE)) %>%
+  mutate(Situación = "Ocupats")
+
+aa2 <- aa %>% filter(SEXO1 == "Home") %>%
+  filter(AOI == 5 | AOI == 6) %>%
+  group_by(ANO) %>%
+  summarise(Total = sum(Total , na.rm = FALSE)) %>%
+  mutate(Situación = "Aturats")
+
+aa3 <- aa %>% filter(SEXO1 == "Home") %>%
+  filter(AOI == 3 | AOI == 4 |AOI == 5 | AOI == 6) %>%
+  group_by(ANO) %>%
+  summarise(Total = sum(Total , na.rm = FALSE)) %>%
+  mutate(Situación = "Actius")
+
+aa4 <- aa %>% filter(SEXO1 == "Home") %>%
+  filter(AOI == 7 | AOI == 8 | AOI == 9) %>%
+  group_by(ANO) %>%
+  summarise(Total = sum(Total , na.rm = FALSE)) %>%
+  mutate(Situación = "Inactius")
+
+aa5 <- aa %>%
+  filter(SEXO1 == "Home") %>%
+  group_by(ANO) %>%
+  summarise(Total = sum(Total , na.rm = FALSE)) %>%
+  mutate(Situación = "Total majors de 16 anys")
+
+zz <- data.frame(Sexo = "Taxes" , Situación = c("Taxa d'activitat - Varons" , "Taxa d'ocupació - Varons" , "Taxa d'atur - Varons" , "Taxa d'atur absoluta - Varons") , ano1978 = c(0.759 , 0.712 , 0.063 , 0.048) , ano2003 =  c(0.681 , 0.619 , 0.09 , 0.061) , ano2019 = c(aa3$Total/aa5$Total , aa1$Total/aa5$Total , aa2$Total/aa3$Total , aa2$Total/aa5$Total))
+
+newRow1 <- data.frame(ANO = 1978 , Total = c(8912000 , 598600 , 9510600 , 3011700 , 12522300) , Situación = c("Ocupats" , "Aturats" , "Actius" , "Inactius" , "Total majors de 16 anys"))
+newRow2 <- data.frame(ANO = 2003 , Total = c(10278600 , 1019500 , 11298100 , 5297600 , 16595700) , Situación = c("Ocupats" , "Aturats" , "Actius" , "Inactius" , "Total majors de 16 anys"))
+
+aa_Home <- bind_rows(aa1 , aa2 , aa3 , aa4 , aa5 , newRow1 , newRow2)
+aa_Home <- aa_Home %>% pivot_wider(names_from = ANO , names_prefix = "ano" , values_from = Total) %>%
+  mutate(dif19.03 = ano2019-ano2003 , dif19.78 = ano2019-ano1978) %>%
+  select(Situación , ano1978 , ano2003 , ano2019 , dif19.03 , dif19.78) %>%
+  add_column(Sexo = "Home" , .before = 1)
+}
+
+  #Dona
+  {aa1 <- aa %>% filter(SEXO1 == "Dona") %>%
+  filter(AOI == 3 | AOI == 4) %>%
+  group_by(ANO) %>%
+  summarise(Total = sum(Total , na.rm = FALSE)) %>%
+  mutate(Situación = "Ocupats")
+
+aa2 <- aa %>% filter(SEXO1 == "Dona") %>%
+  filter(AOI == 5 | AOI == 6) %>%
+  group_by(ANO) %>%
+  summarise(Total = sum(Total , na.rm = FALSE)) %>%
+  mutate(Situación = "Aturats")
+
+aa3 <- aa %>% filter(SEXO1 == "Dona") %>%
+  filter(AOI == 3 | AOI == 4 |AOI == 5 | AOI == 6) %>%
+  group_by(ANO) %>%
+  summarise(Total = sum(Total , na.rm = FALSE)) %>%
+  mutate(Situación = "Actius")
+
+aa4 <- aa %>% filter(SEXO1 == "Dona") %>%
+  filter(AOI == 7 | AOI == 8 | AOI == 9) %>%
+  group_by(ANO) %>%
+  summarise(Total = sum(Total , na.rm = FALSE)) %>%
+  mutate(Situación = "Inactius")
+
+aa5 <- aa %>%
+  filter(SEXO1 == "Dona") %>%
+  group_by(ANO) %>%
+  summarise(Total = sum(Total , na.rm = FALSE)) %>%
+  mutate(Situación = "Total majors de 16 anys")
+
+zz1 <- data.frame(Sexo = "Taxes" , Situación = c("Taxa de actividad - Dones" , "Taxa de ocupación - Dones" , "Taxa de paro - Dones" , "Taxa de paro absoluta - Dones") , ano1978 = c(0.279 , 0.259 , 0.074 , 0.021) , ano2003 =  c(0.445 , 0.363 , 0.184 , 0.082) , ano2019 = c(aa3$Total/aa5$Total , aa1$Total/aa5$Total , aa2$Total/aa3$Total , aa2$Total/aa5$Total))
+
+newRow1 <- data.frame(ANO = 1978 , Total = c(3489600 , 279000 , 3768600 , 9721300 , 13489900) , Situación = c("Ocupats" , "Aturats" , "Actius" , "Inactius" , "Total majors de 16 anys"))
+newRow2 <- data.frame(ANO = 2003 , Total = c(6387400 , 1440900 , 7828300 , 9751500 , 17579800) , Situación = c("Ocupats" , "Aturats" , "Actius" , "Inactius" , "Total majors de 16 anys"))
+
+aa_Dona <- bind_rows(aa1 , aa2 , aa3 , aa4 , aa5 , newRow1 , newRow2)
+aa_Dona <- aa_Dona %>% pivot_wider(names_from = ANO , names_prefix = "ano" , values_from = Total) %>%
+  mutate(dif19.03 = ano2019-ano2003 , dif19.78 = ano2019-ano1978) %>%
+  select(Situación , ano1978 , ano2003 , ano2019 , dif19.03 , dif19.78) %>%
+  add_column(Sexo = "Dona" , .before = 1)
+}
+
+  #7.1 Taxes
+  {
+zz <- bind_rows(zz , zz1)
+zz <- zz %>% arrange(Situación) %>% mutate(dif19.03 = ano2019 - ano2003 , dif19.78 = ano2019 - ano1978) %>%
+  group_by(Sexo)
+
+options(digits = 2)
+
+p1 <- zz %>% gt() %>%
+    tab_header(title = md("**QUADRE 4: LES GRANS TAXES DE L'ACTIVIDAD, L'OCUPACIÓ I L'ATUR EN ESPANYA, 1978, 2003 Y 2019**")) %>%
+    cols_label(Situación = "" , ano1978 = "1978" , ano2003 = "2003" , ano2019 = "2019" , dif19.03 = md("Diferència<br>2019 - 2003") , dif19.78 = md("Diferència<br>2019 - 1978")) %>%
+    fmt_percent(columns = c("ano1978" , "ano2003" , "ano2019" , "dif19.03" , "dif19.78")) %>%
+    tab_source_note(source_note = md("***Font:** INE, EPA*<br>*Elaboració pròpia*")) %>%
+    tab_style(style = cell_text(color = "firebrick", size = "large", align = "center"), locations = cells_title()) %>%
+    tab_style(style = cell_fill(color = "gray95"), locations = cells_title()) %>%
+    tab_style(style = cell_text(color = "firebrick", size = "normal", align = "center" , weight = "bolder"), locations = cells_column_labels(columns = c("Situación" , "ano1978" , "ano2003" , "ano2019" , "dif19.03" , "dif19.78"))) %>%
+    tab_style(style = cell_fill(color = "gray95"), locations = cells_column_labels(columns = c("Situación" , "ano1978" , "ano2003" , "ano2019" , "dif19.03" , "dif19.78"))) %>%
+    tab_style(style = cell_fill(color = "gray95"), locations = cells_data(columns = c("Situación"))) %>%
+    tab_style(style = cell_text(color = "firebrick" , style = "italic"), locations = cells_data(columns = c("Situación")))
+p1
+  }
+
+aa <- bind_rows(aa_tot , aa_Home , aa_Dona)
+aa <- aa %>% mutate(ano1978 = ano1978/1000 , ano2003 = ano2003/1000 , ano2019 = ano2019/1000 , dif19.03 = dif19.03/1000 , dif19.78 = dif19.78/1000) %>%
+  group_by(Sexo)
+
+options(digits = 4)
+
+p <- aa %>% gt() %>%
+    tab_header(title = md("**QUADRE 3: LES GRANS MAGNITUDS DE L'ACTIVITAT, L'OCUPACIÓ I L'ATUR EN ESPANYA, 1978, 2003 Y 2019**")) %>%
+    cols_label(Situación = "" , ano1978 = "1978" , ano2003 = "2003" , ano2019 = "2019" , dif19.03 = md("Diferència<br>2019 - 2003") , dif19.78 = md("Diferència<br>2019 - 1978")) %>%
+    tab_source_note(source_note = md("***Font:** INE, EPA*<br>*Elaboració pròpia*")) %>%
+    tab_style(style = cell_text(color = "firebrick", size = "large", align = "center"), locations = cells_title()) %>%
+    tab_style(style = cell_fill(color = "gray95"), locations = cells_title()) %>%
+    tab_style(style = cell_text(color = "firebrick", size = "normal", align = "center" , weight = "bolder"), locations = cells_column_labels(columns = c("Situación" , "ano1978" , "ano2003" , "ano2019" , "dif19.03" , "dif19.78"))) %>%
+    tab_style(style = cell_fill(color = "gray95"), locations = cells_column_labels(columns = c("Situación" , "ano1978" , "ano2003" , "ano2019" , "dif19.03" , "dif19.78"))) %>%
+    tab_style(style = cell_text(weight = "bold"), locations = cells_data(columns = c("Situación" , "ano1978" , "ano2003" , "ano2019" , "dif19.03" , "dif19.78"), rows = c(5 , 10 , 15))) %>%
+    tab_style(style = cell_fill(color = "gray95"), locations = cells_data(columns = c("Situación"))) %>%
+    tab_style(style = cell_text(color = "firebrick" , style = "italic"), locations = cells_data(columns = c("Situación")))
+
+p
+}
+```
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Malauradament, malgrat créixer durant els últims anys, es consolida un aspecte del mercat laboral espanyol que ja es venia arrossegant durant unes dècades. Després de les crisis dels setanta i començaments dels 80, sumada a la crisi de començaments dels 90 l’atur a Espanya va començar a ser crònic; abans de l’esclat de la bombolla immobiliària, l’atur va baixar molt fins arribar a semblar-se més a les taxes d’atur dels països del nostre voltant, però gran quantitat de l’ocupació creada va ser en el sector de la construcció, és a dir, que molts dels ocupats espanyols depenien d’aquest sector i amb la gran crisi de 2008 gran quantitat dels ocupats quedaren aturats, fent que la taxa d’atur es disparés fins superar el 25%.    
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Després de molts anys de creixement econòmic i de fort creixement del nombre d’ocupats, aquesta taxa s’ha anat reduint fins arribar a les taxes que ací veiem, però segueixen prou llunyanes de les taxes d’atur europees (i més, de les taxes de països que porten tants anys de creixement econòmic). L’atur conjuntural o cíclic es veu afectat pel cicle econòmic del moment (si l’economia es troba en recessió, l’atur cíclic es dispara. Si l’economia es troba en expansió, l’atur cíclic es redueix). Per aquesta raó, resulta més interessant a l’hora de fer un treball que analitze l’evolució a llarg termini, observar com ha variat l’atur estructural. Aquest és més preocupant, ja que no es deu a shocks transitoris o als canvis en la producció, sinó a desajustos d’oferta i demanda del propi mercat de treball, com per exemple diferències entre els perfils tècnics de la població (oferta de treball) i les empreses (demanda de treball). Que la taxa d’atur siga del 12% i 15% després d’anys de creixement, és símptoma d’un mercat laboral amb molt d’atur estructural.    
+
+
+
+```{r 62 , echo = FALSE}
+# 7. Grandes taxes de la actividad, el empleo y el paro en españa.
+p1
+```
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L’altra cara de la moneda no és tan dolenta i és que el nombre d’ocupats no para de créixer, cosa que significa que el mercat laboral espanyol ha tingut la capacitat d’acollir a un gran nombre de mà d’obra que s’ha anat incorporant al llarg dels anys. Com ja sabem, aquesta capacitat d’absorció no ha sigut suficient per mantindre una taxa d’atur baixa, però ha sigut capaç d’igualar les xifres entre homes i dones, ja que la gran majoria de l’augment del nombre d’ocupats ha vingut donada per la incorporació de la dona al mercat laboral.    
+
+
+## <FONT COLOR="darkred">4. TAXES D'ACTIVITAT: TRANSCENDÈNCIA SOCIAL I ECONÒMICA DELS SEUS CANVIS</FONT>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;S’ha de destacar també que a pesar de l’augment del nombre de dones majors de 16 anys, el nombre total d’inactives s’ha reduït subtilment, alhora que el nombre d’actives s’ha quasi triplicat des de 1978 a un ritme que tot i que s’ha anat reduint, és molt alt i ha propiciat una convergència entre homes i dones prou significativa en taxes d’activitat. Abans en les grans xifres es veu clarament, però millor ho podrem veure en el pròxim gràfic. Aquest, mostra com les taxes d’activitat de les dones han canviat completament la forma que tenien en 1978. Aquesta forma estava marcada fortament per l’edat habitual de la maternitat, on comença a caure la taxa d’activitat, fins una distribució en forma de U invertida molt més semblant a la dels homes.    
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;No només ha canviat la forma general de la corba de les taxes d’activitat de les dones, sinó que també es pot apreciar com ha canviat el moment vital en que és major la taxa d’activitat. En el cas de les dones està clar que abans es trobava en l’edat prèvia a la maternitat, fent que les edats amb major taxa d’activitat foren les de 20 a 24 en 1978; en 2003 l’edat de maternitat es retardava i la incorporació definitiva de la dona al mercat de treball era un procés que ja havia començat a assolir-se, fent que les edats de major taxa d’activitat foren les de 25 a 29 anys; ara en 2019 la maternitat no marca l’edat amb major taxa d’activitat, ja que ara aquesta edat es troba entre els 40 i 44 anys a l’igual que els homes.    
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;En quant a la forma de la corba de les taxes d’activitat dels homes, no es pot dir que ha patit un canvi tan sever com la de les dones però si ha patit canvis que són importants per les implicacions que tenen. Molts d’estos canvis es troben també en la corba de les dones, però com la metamorfosi que ha viscut aquesta és tan gran per la raó anteriorment explicada, aquests canvis tan lleugers no es poden apreciar tan bé. El primer canvi que cal assenyalar és que, encara que poc, la corba s’ha desplaçat cap a baix obtenint menors taxes d’activitat per a totes les edats. Si hi ha una franja d’edat que pot sorprendre que baixe la taxa d’activitat conforme passen els anys eixa és la dels més majors. Qualsevol podria pensar que amb unes de les esperances de vida més altes del món i un sistema sanitari que cobreix a tota la població, la gent es troba més “sana” durant més anys i per tant, poden treballar més anys. Però ni molt menys açò és verídic, sinó el contrari. És aquest sistema de l’Estat del Benestar el que ha estès les prestacions per jubilació (entre d’altres) i ha permès viure a la gent major sense haver de treballar per obtindre ingressos. Açò, sumat al fet de que dins de la població de 65 i més cada vegada hi són de mitjana més majors, s’entén que la taxa d’activitat siga més baixa cada any.    
+
+
+<input type=button class=hideshow></input>
+
+```{r 7 , echo = FALSE}
+# 5. Taxa de actividad por sexo y grupos quinquenales
+{
+  ii <- 133
+
+  zz1 <- df %>% filter(CICLO == ii , NIVEL == 1) %>%
+  group_by(CICLO , EDAD5 , SEXO1) %>%
+  summarise("Total" = sum(FACTOREL , na.rm = FALSE)) %>%
+  ungroup()
+
+  aa <- df %>% filter(AOI == 3 | AOI == 4 | AOI == 5 | AOI == 6) %>%
+  filter(CICLO == ii , NIVEL == 1) %>%
+  group_by(CICLO , EDAD5 , SEXO1) %>%
+  summarise("Percentatge" = sum(FACTOREL , na.rm = FALSE)) %>%
+  ungroup() %>%
+  mutate(Percentatge = Percentatge*100/zz1$Total)
+
+  x <- c(153 , 173 , ciclo_elegido)
+
+  for (ii in x) {
+    zz1 <- df %>% filter(CICLO == ii , NIVEL == 1) %>%
+  group_by(CICLO , EDAD5 , SEXO1) %>%
+  summarise("Total" = sum(FACTOREL , na.rm = FALSE)) %>%
+  ungroup()
+    aa1 <- df %>% filter(AOI == 3 | AOI == 4 | AOI == 5 | AOI == 6) %>%
+  filter(CICLO == ii , NIVEL == 1) %>%
+  group_by(CICLO , EDAD5 , SEXO1) %>%
+  summarise("Percentatge" = sum(FACTOREL , na.rm = FALSE)) %>%
+  ungroup() %>%
+  mutate(Percentatge = Percentatge*100/zz1$Total)
+
+    aa <- bind_rows(aa , aa1)
+    }
+
+aa <- aa %>% mutate(Any = gsub(x = CICLO , pattern = 133 , replacement = "2005")) %>%
+  mutate(Any = gsub(x = Any , pattern = 153 , replacement = "2010")) %>%
+  mutate(Any = gsub(x = Any , pattern = 173 , replacement = "2015")) %>%
+  mutate(Any = gsub(x = Any , pattern = ciclo_elegido , replacement = "2019")) %>%
+  mutate(Edat = EDAD5 , Sexo = SEXO1) %>%
+  select(Any , Edat , Percentatge , Sexo)
+
+newRow1 <- data.frame(Any = as.character(c(1978 , 1978 , 1978 , 1978 , 1978 , 1978 , 1978 , 1978 , 1978 , 1978 , 1978 , 1978 , 1978 , 1978 , 1978 , 1978 , 1978 , 1978 , 1978 , 1978 , 1978 , 1978)) , Edat = c(16,16,20,20,25,25,30,30,35,35,40,40,45,45,50,50,55,55,60,60,65,65) , Percentatge = c(57,45,63,54,94,37,98,28,98,26,97,28,96,27,93,27.5,87,26,69,20,16,9) , Sexo = c("Home" , "Dona" , "Home" , "Dona" , "Home" , "Dona" , "Home" , "Dona" , "Home" , "Dona" , "Home" , "Dona" , "Home" , "Dona" , "Home" , "Dona" , "Home" , "Dona" , "Home" , "Dona" , "Home" , "Dona"))
+newRow2 <- data.frame(Any = as.character(c(2003 , 2003 , 2003 , 2003 , 2003 , 2003 , 2003 , 2003 , 2003 , 2003 , 2003 , 2003 , 2003 , 2003 , 2003 , 2003 , 2003 , 2003 , 2003 , 2003 , 2003 , 2003)) , Edat = c(16,16,20,20,25,25,30,30,35,35,40,40,45,45,50,50,55,55,60,60,65,65) , Percentatge = c(31,19,68,58,90,80,95,75,95.5,70,95,67,93.5,61.5,89,47,76,33.5,49,19,3.2,2) , Sexo = c("Home" , "Dona" , "Home" , "Dona" , "Home" , "Dona" , "Home" , "Dona" , "Home" , "Dona" , "Home" , "Dona" , "Home" , "Dona" , "Home" , "Dona" , "Home" , "Dona" , "Home" , "Dona" , "Home" , "Dona"))
+
+aa_def <- bind_rows(aa , newRow1 , newRow2)
+#aa_def <- aa_def %>% filter(Any %in% c("1978" , "2003" , "2019"))
+
+p <- ggplot(data = aa_def , mapping = aes(x = Edat , y = Percentatge , colour = Any)) +
+  geom_line() +
+  labs(title = "GRÀFIC 3: TAXA D'ACTIVIDAD PER SEXE I GRUPS QUINQUENALS D'EDAT EN ESPANYA" , caption = "Font: INE, EPA. Elaboració pròpia" , x = NULL , y = NULL) +
+  theme(plot.caption = element_text(face = "italic", colour = "gray24") ,
+    plot.title = element_text(size = 16 , face = "bold", colour = "firebrick") ,
+    axis.text.x = element_text(angle = 45, hjust = 1) ,
+    panel.background = element_rect(fill = "gray80", colour = "snow4")) +
+  facet_wrap(vars(Sexo)) +
+  scale_x_continuous(breaks = seq(15 , 65 , 10) , labels = c("15-19" , "25-29" , "35-39" , "45-49" , "55-59" , "65 y más")) +
+  scale_y_continuous(breaks = seq(0 , 100 , 10) , labels = c("0%" , "10%" , "20%" , "30%" , "40%" , "50%" , "60%" , "70%" , "80%" , "90%" , "100%")) +
+  labs(colour = NULL) +
+  scale_color_brewer(palette = "YlOrRd")
+
+ggplotly(p , tooltip = c("Any" ,  "Percentatge" , "Edat"))
+}
+```
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;En segon lloc, destaca el cas dels més joves que en 1978 partien d’una taxa d’activitat de més del 55%, mentre que en 2003 era d’un 32% aproximadament i en 2019 ja és d’un 15%. Aquest és un canvi substancial i es deu principalment a que cada vegada més, edat de treballar no vol dir posar-se a treballar, sinó que en l’actualitat la gran majoria dels joves entre 16 i 19 anys està estudiant i no busca ocupació. Com veiem al gràfic 4, en l’actualitat, cada vegada més, el percentatge de joves que es declara estudiant en espanya és major i el període durant el qual la gent es forma és cada vegada major, retardant la seua entrada al mercat laboral. Aquesta raó ajuda a entendre per què el rang d’edat amb major taxa d’ocupació ha canviat des dels 30 a 34 fins els 40 a 44 per als homes i dels 20 a 24 anys fins els 40 a 44 anys per a les dones, a les quals li hem d’afegir l’efecte de que la maternitat ha deixat de ser determinant a l’hora de ser o no ser activa en el mercat de treball.    
+
+
+<input type=button class=hideshow></input>
+
+```{r 8 , echo = FALSE}
+# 6. Percentatge de jóvenes que se declaran estudiantes (parece estar mal porque no es normal que en 2003 Percentatge alto y 2005 Percentatge bajo. Además, no tenemos los datos de Edat sin agrupar porque esos datos valen dinero)
+{
+ii <- 133
+
+  zz1 <- df %>% filter(CICLO == ii , NIVEL == 1 , EDAD5 %in% c(16 , 20 , 25 , 30)) %>%
+  group_by(CICLO , EDAD5) %>%
+  summarise("Total" = sum(FACTOREL , na.rm = FALSE)) %>%
+  ungroup()
+
+  aa <- df %>% filter(CURSR %in% c(1 , 2) | CURSNR %in% c(1 , 2)) %>%
+  filter(CICLO == ii , NIVEL == 1 , EDAD5 %in% c(16 , 20 , 25 , 30)) %>%
+  group_by(CICLO , EDAD5) %>%
+  summarise("Percentatge" = sum(FACTOREL , na.rm = FALSE)) %>%
+  ungroup() %>%
+  mutate(Percentatge = Percentatge*100/zz1$Total)
+
+  x <- c(153 , 173 , ciclo_elegido)
+
+  for (ii in x) {
+    zz1 <- df %>% filter(CICLO == ii , NIVEL == 1 , EDAD5 %in% c(16 , 20 , 25 , 30)) %>%
+  group_by(CICLO , EDAD5) %>%
+  summarise("Total" = sum(FACTOREL , na.rm = FALSE)) %>%
+  ungroup()
+    aa1 <- df %>% filter(CURSR %in% c(1 , 2) | CURSNR %in% c(1 , 2)) %>%
+  filter(CICLO == ii , NIVEL == 1 , EDAD5 %in% c(16 , 20 , 25 , 30)) %>%
+  group_by(CICLO , EDAD5) %>%
+  summarise("Percentatge" = sum(FACTOREL , na.rm = FALSE)) %>%
+  ungroup() %>%
+  mutate(Percentatge = Percentatge*100/zz1$Total)
+
+    aa <- bind_rows(aa , aa1)
+    }
+
+aa <- aa %>% mutate(Any = gsub(x = CICLO , pattern = 133 , replacement = "2005")) %>%
+  mutate(Any = gsub(x = Any , pattern = 153 , replacement = "2010")) %>%
+  mutate(Any = gsub(x = Any , pattern = 173 , replacement = "2015")) %>%
+  mutate(Any = gsub(x = Any , pattern = ciclo_elegido , replacement = "2019")) %>%
+  mutate(Edat = EDAD5) %>%
+  select(Any , Edat , Percentatge)
+
+newRow1 <- data.frame(Any = as.character(c(1978 , 1978 , 1978 , 1978)) , Edat = c(16 , 20 , 25 , 30) , Percentatge = c(55 , 25 , 6 , 1))
+newRow2 <- data.frame(Any = as.character(c(2003 , 2003 , 2003 , 2003)) , Edat = c(16 , 20 , 25 , 30) , Percentatge = c(91 , 56 , 26 , 7.5))
+aa_def <- bind_rows(aa , newRow1 , newRow2)
+#aa_def <- aa_def %>% filter(Any %in% c("1978" , "2003" , "2019"))
+
+p <- ggplot(data = aa_def , mapping = aes(x = Edat , y = Percentatge , colour = Any)) +
+  geom_line() +
+  labs(title = "GRÀFIC 4: PERCENTATGE DE JOVES QUE ES DECLAREN ESTUDIANTS EN ESPANYA" , caption = "Font: INE, EPA. Elaboració pròpia" , x = NULL , y = NULL) +
+  theme(plot.caption = element_text(face = "italic", colour = "gray24") ,
+    plot.title = element_text(size = 16 , face = "bold", colour = "firebrick") ,
+    axis.text.x = element_text(angle = 45, hjust = 1) ,
+    panel.background = element_rect(fill = "gray80", colour = "snow4")) +
+  scale_x_continuous(breaks = seq(0 , 30 , 5)) +
+  scale_y_continuous(breaks = seq(0 , 100 , 10) , labels = c("0%" , "10%" , "20%" , "30%" , "40%" , "50%" , "60%" , "70%" , "80%" , "90%" , "100%")) +
+  labs(colour = NULL) +
+  scale_color_brewer(palette = "YlOrRd")
+
+ggplotly(p , tooltip = c("Any" ,  "Percentatge" , "Edat"))
+}
+```
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Al gràfic 4 es veu la tendència que abans s’esmentava[^4]. Cada vegada més, els joves es declaren com a estudiants, cosa que deixa menys temps per buscar treball. Moltes vegades, les famílies de renda baixa es veuen obligades a demanar als fills que treballen per poder obtenir suficients ingressos per la llar, però aquests casos s’han reduït gràcies, en part, a l’Estat del Benestar que dona ajudes a les famílies amb estudiants de baixa renda o a la millora salarial viscuda des de l’any 1978 que permet que hi haja menys percentatge de famílies amb aquesta necessitat.    
+
+
+
+## <FONT COLOR="darkred">5. COMPORTAMENT DE L'OCUPACIÓ</FONT>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Als apartats anteriors s’han vist els aspectes quantitatius del mercat de treball i de la societat espanyola als anys 1978, 2003 i 2019. En aquest apartat es veuen els canvis en les característiques dels ocupats. En concret, es veurà l’evolució de la distribució del treball segons el sector d’activitat, segons la situació professional i segons la relació amb la persona de referència.    
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Comencem per l’anàlisi de l’ocupació per sectors d’activitat. Al quadre 5 es pot veure el valor absolut de treballadors en milers de persones i els percentatges sobre el total que aquests representen. La primera cosa que cal recordar, i que ja s’ha dit en anteriors apartats, és l’increment substancial de les persones ocupades. Aquest creixement ja es podia apreciar del 1978 al 2003, però aquest continua fins 2019, arribant a xifres que quasi doblen les de l’any 1978. Però, com també es pot apreciar al quadre, aquest augment dels ocupats no s’ha distribuït equitativament entre tots els sectors d’activitat, ja que el sector terciari ha guanyat molt de pes en detriment del primari i secundari.    
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sectors com el comerç, hostaleria i transport han més que duplicat el nombre de treballadors, els serveis al sector públic han quadruplicat el seu nombre de treballadors i els serveis financers i serveis a empreses han sextuplicat el seu nombre de treballadors. Aquestes xifres són antagòniques a les xifres del sector que més ha reduït el nombre de treballadors, que és el sector de l’agricultura. La indústria ha perdut treballadors a un menor ritme que el sector agrari i la construcció ha mantes el nombre de treballadors. Açò en quant a milers de treballadors per sector d’activitat, però aquests canvis han provocat que els percentatges que cada sector representa sobre el total hagen canviat. L’agricultura ha passat a ser un sector molt minoritari en quantitat de treballadors (ha passat de representar quasi el 20% dels ocupats a tan sols el 4%), la indústria no és un sector tant minoritari, però sí que representa la meitat de treballadors que en 1978 (representava el 27,6% en 1978 i en 2019 només el 13,8%). El sector de la construcció ha baixat molt respecte del 2003 (del 12% al 6%), quan encara s’estava formant la bombolla immobiliària. Els grans augments són els que ja hem  dit abans: el sector terciari, i és que el comerç, hostaleria i transport han passat de representar un quart dels ocupats en 1978 a un terç dels mateixos en 2019, els ocupats en el sector dels serveis financers i dels serveis a empreses han passat de representar el 3,4% en 1978 a un 13,39% en 2019, un augment molt significatiu. I per últim, els serveis públics, que van créixer amb força des del 1978, quan aglutinaven al 9% dels ocupats, fins al 2003, quan aglutinaven al doble (18%), i des del 2003 al 2019 han augmentat (a una menor velocitat) com a percentatge del total fins aplegar a ser el 22,4% dels ocupats d’avui en dia.    
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Aquests canvis no només tenen repercussió en l’estil de vida de les persones, sinó que té una gran influencia sobre el creixement de la productivitat o el creixement potencial de la productivitat els pròxims anys. Espanya ha passat de ser un país industrial i agrari en 1978 a ser un país on pràcticament tres quarts dels treballadors treballen en el sector serveis en 2019. La productivitat en sectors intensius en capital com l’agricultura i la indústria ha augmentat durant els últims anys gràcies a la robotització i els avanços tecnològics, mentre que la productivitat dels sectors intensius en mà d’obra, com el sector terciari, no ho ha fet tant.    
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Tal i com senyala Andrés Maroto (2007) en la seua tesi doctoral sobre la productivitat del sector serveis, l’augment en la productivitat del sector primari des dels anys vuitanta fins el 2003 ha sigut d’un 5,15% (taxa mitjana anual), les manufactures un 3,19%, l’energia un 3,23% i el sector serveis un 0,36% en Espanya (els serveis de comunicació un 4,19 i tota la resta de serveis amb un creixement menor a un 2% anual o inclús alguns en negatiu). Dins d’aquestes variacions, Maroto també destaca que serveis com els financers, tot i no augmentar substancialment la seua productivitat, compten amb una productivitat alta en comparació amb la resta de serveis. Maroto també compara la productivitat de 1980 i 2003 de diferents sectors i apunta que el sector primari té una productivitat en 2003 de 290 aproximadament (números índex 100 = 1980), el sector de la mineria compta amb una productivitat en 2003 de 180, el sector de les manufactures té una productivitat de 200 en 2003, el sector energètic de 210 i el sector serveis té una productivitat de 110 aproximadament en 2003.    
+
+
+
+```{r 9 , echo = FALSE}
+# 8. Distribució del empleo por sector de actividad
+{
+aa <- df %>% filter(CICLO == ciclo_elegido) %>%
+  filter(AOI == 3 | AOI == 4) %>%
+  mutate(ANO = 2019) %>%
+  group_by(ACT1 , ANO) %>%
+  summarise(Total = sum(FACTOREL , na.rm = FALSE)) %>%
+  ungroup()
+
+aa_tot <- aa %>% group_by(ANO) %>%
+  summarise(Total = sum(Total , na.rm = FALSE)) %>%
+  ungroup() %>%
+  select(ANO , Total) %>%
+  add_row(ANO = c(1978 , 2003) , Total = c(12400500 , 16666100) , .before = 1) %>%
+  pivot_wider(names_prefix = "ano" , names_from = ANO , values_from = Total) %>%
+  mutate(por1978 = ano1978/ano1978, por2003 = ano2003/ano2003, por2019 = ano2019/ano2019 , Sector = "Total") %>%
+  select(7 , 1:6)
+
+
+aa1 <- aa %>% filter(ACT1 == 0) %>%
+  select(ANO , Total) %>%
+  add_row(ANO = c(1978 , 2003) , Total = c(2472100 , 934400) , .before = 1) %>%
+  pivot_wider(names_prefix = "ano" , names_from = ANO , values_from = Total) %>%
+  mutate(por1978 = ano1978/aa_tot$ano1978, por2003 = ano2003/aa_tot$ano2003, por2019 = ano2019/aa_tot$ano2019 , Sector = "Agricultura") %>%
+  select(7 , 1:6)
+
+aa2 <- aa %>% filter(ACT1 == 1 | ACT1 == 2 | ACT1 == 3) %>%
+  group_by(ANO) %>%
+  summarise(Total = sum(Total , na.rm = FALSE)) %>%
+  ungroup() %>%
+  select(ANO , Total) %>%
+  add_row(ANO = c(1978 , 2003) , Total = c(3425000 , 3127900) , .before = 1) %>%
+  pivot_wider(names_prefix = "ano" , names_from = ANO , values_from = Total) %>%
+  mutate(por1978 = ano1978/aa_tot$ano1978, por2003 = ano2003/aa_tot$ano2003, por2019 = ano2019/aa_tot$ano2019 , Sector = "Indústria") %>%
+  select(7 , 1:6)
+
+aa3 <- aa %>% filter(ACT1 == 4) %>%
+  select(ANO , Total) %>%
+  add_row(ANO = c(1978 , 2003) , Total = c(1234500 , 2010000) , .before = 1) %>%
+  pivot_wider(names_prefix = "ano" , names_from = ANO , values_from = Total) %>%
+  mutate(por1978 = ano1978/aa_tot$ano1978, por2003 = ano2003/aa_tot$ano2003, por2019 = ano2019/aa_tot$ano2019 , Sector = "Construcció") %>%
+  select(7 , 1:6)
+
+aa4 <- aa %>% filter(ACT1 == 5 | ACT1 == 6) %>%
+  group_by(ANO) %>%
+  summarise(Total = sum(Total , na.rm = FALSE)) %>%
+  ungroup() %>%
+  select(ANO , Total) %>%
+  add_row(ANO = c(1978 , 2003) , Total = c(2956200 , 4689400) , .before = 1) %>%
+  pivot_wider(names_prefix = "ano" , names_from = ANO , values_from = Total) %>%
+  mutate(por1978 = ano1978/aa_tot$ano1978, por2003 = ano2003/aa_tot$ano2003, por2019 = ano2019/aa_tot$ano2019 , Sector = "Comerç, hostaleria, transport") %>%
+  select(7 , 1:6)
+
+aa5 <- aa %>% filter(ACT1 == 7) %>%
+  select(ANO , Total) %>%
+  add_row(ANO = c(1978 , 2003) , Total = c(415800 , 1724000) , .before = 1) %>%
+  pivot_wider(names_prefix = "ano" , names_from = ANO , values_from = Total) %>%
+  mutate(por1978 = ano1978/aa_tot$ano1978, por2003 = ano2003/aa_tot$ano2003, por2019 = ano2019/aa_tot$ano2019 , Sector = "Serv. financers, serv. empreses") %>%
+  select(7 , 1:6)
+
+aa6 <- aa %>% filter(ACT1 == 8) %>%
+  select(ANO , Total) %>%
+  add_row(ANO = c(1978 , 2003) , Total = c(1131900 , 3047100) , .before = 1) %>%
+  pivot_wider(names_prefix = "ano" , names_from = ANO , values_from = Total) %>%
+  mutate(por1978 = ano1978/aa_tot$ano1978, por2003 = ano2003/aa_tot$ano2003, por2019 = ano2019/aa_tot$ano2019 , Sector = "Serv. públics") %>%
+  select(7 , 1:6)
+
+aa7 <- aa %>% filter(ACT1 == 9) %>%
+  select(ANO , Total) %>%
+  add_row(ANO = c(1978 , 2003) , Total = c(765000 , 1133300) , .before = 1) %>%
+  pivot_wider(names_prefix = "ano" , names_from = ANO , values_from = Total) %>%
+  mutate(por1978 = ano1978/aa_tot$ano1978, por2003 = ano2003/aa_tot$ano2003, por2019 = ano2019/aa_tot$ano2019 , Sector = "Altres serveis") %>%
+  select(7 , 1:6)
+
+aa <- bind_rows(aa1 , aa2 , aa3 , aa4 , aa5 , aa6 , aa7 , aa_tot)
+aa <- aa %>% mutate(ano1978 = ano1978/1000 , ano2003 = ano2003/1000 , ano2019 = ano2019/1000 , por1978 = por1978 , por2003 = por2003 , por2019 = por2019)
+
+p <- aa %>% gt() %>%
+    tab_header(title = md("**QUADRE 5: DISPERSIÓ DE L'OCUPACIÓ PER SECTORS D'ACTIVITAT EN ESPANYA, 1978, 2003 I 2019**")) %>%
+    cols_label(Sector = "Sectors d'activitat" , ano1978 = "1978" , ano2003 = "2003" , ano2019 = "2019" , por1978 = "1978" , por2003 = "2003" , por2019 = "2019") %>%
+    fmt_percent(columns = c("por1978" , "por2003" , "por2019")) %>%
+    tab_spanner(label = "Milers de persones", columns = c("ano1978" , "ano2003" , "ano2019"), gather = TRUE) %>%
+    tab_spanner(label = "Percentatges del total", columns = c("por1978" , "por2003" , "por2019"), gather = TRUE) %>%
+    tab_source_note(source_note = md("***Font:** INE, EPA*<br>*Elaboració pròpia*")) %>%
+    tab_style(style = cell_text(color = "firebrick", size = "large", align = "center"), locations = cells_title()) %>%
+    tab_style(style = cell_fill(color = "gray95"), locations = cells_column_spanners(spanners = c("Milers de persones" , "Percentatges del total"))) %>%
+    tab_style(style = cell_text(color = "firebrick", size = "large", align = "center" , weight = "bolder"), locations = cells_column_spanners(spanners = c("Milers de persones" , "Percentatges del total"))) %>%
+    tab_style(style = cell_fill(color = "gray95"), locations = cells_title()) %>%
+    tab_style(style = cell_text(color = "firebrick", size = "normal", align = "center" , weight = "bolder"), locations = cells_column_labels(columns = c("Sector" , "ano1978" , "ano2003" , "ano2019" , "por1978" , "por2003" , "por2019"))) %>%
+    tab_style(style = cell_fill(color = "gray95"), locations = cells_column_labels(columns = c("Sector" , "ano1978" , "ano2003" , "ano2019" , "por1978" , "por2003" , "por2019"))) %>%
+    tab_style(style = cell_text(weight = "bold"), locations = cells_data(columns = c("ano1978" , "ano2003" , "ano2019" , "por1978" , "por2003" , "por2019"), rows = 8)) %>%
+    tab_style(style = cell_fill(color = "gray95"), locations = cells_data(columns = c("Sector"))) %>%
+    tab_style(style = cell_text(color = "firebrick" , style = "italic"), locations = cells_data(columns = c("Sector")))
+
+p
+
+}
+```
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Aquesta situació de major pes del sector serveis en detriment de l’agricultura i, durant els últims anys, en detriment de la indústria suposa un repte per a l’economia espanyola els pròxims anys. En aquest anàlisi es destaquen els fets i aquests són que sectors amb alts creixements de la productivitat representen cada vegada menys percentatge del total de treballs, i per contra, sectors amb poc creixement de la productivitat cada vegada representen més percentatge del total de treballadors.    
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A continuació es veurà com ha canviat la distribució dels ocupats segons la seua situació professional. En el Quadre 6 es presenta la distribució dels ocupats segons la seua situació professional en els tres anys de l’anàlisi: 1978, 2003 i 2019.    
+
+
+
+```{r 10 , echo = FALSE}
+# 10. Distribución del empleo por situación profesional
+{
+aa <- df %>% filter(CICLO == ciclo_elegido) %>%
+  mutate(ANO = 2019) %>%
+  group_by(SITU , ANO) %>%
+  summarise(Total = sum(FACTOREL , na.rm = FALSE)) %>%
+  ungroup() %>%
+  filter(!SITU == is.na(SITU))
+
+aa_tot <- aa %>% group_by(ANO) %>%
+  summarise(Total = sum(Total , na.rm = FALSE)) %>%
+  ungroup() %>%
+  select(ANO , Total) %>%
+  add_row(ANO = c(1978 , 2003) , Total = c(12381800 , 16665900) , .before = 1) %>%
+  pivot_wider(names_prefix = "ano" , names_from = ANO , values_from = Total) %>%
+  mutate(por1978 = ano1978/ano1978, por2003 = ano2003/ano2003, por2019 = ano2019/ano2019 , Sector = "Total") %>%
+  select(7 , 1:6)
+
+aa1 <- aa %>% filter(SITU == 1) %>%
+  select(ANO , Total) %>%
+  add_row(ANO = c(1978 , 2003) , Total = c(427400 , 914800) , .before = 1) %>%
+  pivot_wider(names_prefix = "ano" , names_from = ANO , values_from = Total) %>%
+  mutate(por1978 = ano1978/aa_tot$ano1978, por2003 = ano2003/aa_tot$ano2003, por2019 = ano2019/aa_tot$ano2019 , Sector = "Empleadors") %>%
+  select(7 , 1:6)
+
+aa3 <- aa %>% filter(SITU == 3) %>%
+  group_by(ANO) %>%
+  summarise(Total = sum(Total , na.rm = FALSE)) %>%
+  ungroup() %>%
+  select(ANO , Total) %>%
+  add_row(ANO = c(1978 , 2003) , Total = c(2140100 , 1888800) , .before = 1) %>%
+  pivot_wider(names_prefix = "ano" , names_from = ANO , values_from = Total) %>%
+  mutate(por1978 = ano1978/aa_tot$ano1978, por2003 = ano2003/aa_tot$ano2003, por2019 = ano2019/aa_tot$ano2019 , Sector = "Autònoms o empresari sense assalariats") %>%
+  select(7 , 1:6)
+
+aa6 <- aa %>% filter(SITU == 6) %>%
+  group_by(ANO) %>%
+  summarise(Total = sum(Total , na.rm = FALSE)) %>%
+  ungroup() %>%
+  select(ANO , Total) %>%
+  add_row(ANO = c(1978 , 2003) , Total = c(1039400 , 272100) , .before = 1) %>%
+  pivot_wider(names_prefix = "ano" , names_from = ANO , values_from = Total) %>%
+  mutate(por1978 = ano1978/aa_tot$ano1978, por2003 = ano2003/aa_tot$ano2003, por2019 = ano2019/aa_tot$ano2019 , Sector = "Ajuda en empresa o negoci familiar") %>%
+  select(7 , 1:6)
+
+aa7 <- aa %>% filter(SITU == 7) %>%
+  select(ANO , Total) %>%
+  add_row(ANO = c(1978 , 2003) , Total = c(1484900 , 2716200) , .before = 1) %>%
+  pivot_wider(names_prefix = "ano" , names_from = ANO , values_from = Total) %>%
+  mutate(por1978 = ano1978/aa_tot$ano1978, por2003 = ano2003/aa_tot$ano2003, por2019 = ano2019/aa_tot$ano2019 , Sector = "Assalariat sector públic") %>%
+  select(7 , 1:6)
+
+aa8 <- aa %>% filter(SITU == 8) %>%
+  select(ANO , Total) %>%
+  add_row(ANO = c(1978 , 2003) , Total = c(7277900 , 10858100) , .before = 1) %>%
+  pivot_wider(names_prefix = "ano" , names_from = ANO , values_from = Total) %>%
+  mutate(por1978 = ano1978/aa_tot$ano1978, por2003 = ano2003/aa_tot$ano2003, por2019 = ano2019/aa_tot$ano2019 , Sector = "Assalariado sector privat") %>%
+  select(7 , 1:6)
+
+aa9 <- aa %>% filter(SITU == 9 | SITU == 5) %>%
+  group_by(ANO) %>%
+  summarise(Total = sum(Total , na.rm = FALSE)) %>%
+  select(ANO , Total) %>%
+  add_row(ANO = c(1978 , 2003) , Total = c(12100 , 15900) , .before = 1) %>%
+  pivot_wider(names_prefix = "ano" , names_from = ANO , values_from = Total) %>%
+  mutate(por1978 = ano1978/aa_tot$ano1978, por2003 = ano2003/aa_tot$ano2003, por2019 = ano2019/aa_tot$ano2019 , Sector = "Membre de cooperativa o altra situació") %>%
+  select(7 , 1:6)
+
+aa1 <- bind_rows(aa1 , aa3 , aa6 , aa7 , aa8 , aa9 , aa_tot)
+aa1 <- aa1 %>% mutate(ano1978 = ano1978/1000 , ano2003 = ano2003/1000 , ano2019 = ano2019/1000 , por1978 = por1978 , por2003 = por2003 , por2019 = por2019)
+
+options(digits = 4)
+
+p <- aa1 %>% gt() %>%
+    tab_header(title = md("**QUADRE 6: DISTRIBUCIÓ DE L'OCUPACIÓ PER SITUACIÓ PROFESSIONAL EN ESPANYA, 1978, 2003 Y 2019**")) %>%
+    cols_label(Sector = "Situació professional" , ano1978 = "1978" , ano2003 = "2003" , ano2019 = "2019" , por1978 = "1978" , por2003 = "2003" , por2019 = "2019") %>%
+    fmt_percent(columns = c("por1978" , "por2003" , "por2019")) %>%
+    tab_spanner(label = "Milers de persones", columns = c("ano1978" , "ano2003" , "ano2019"), gather = TRUE) %>%
+    tab_spanner(label = "Percentatges del total", columns = c("por1978" , "por2003" , "por2019"), gather = TRUE) %>%
+    tab_source_note(source_note = md("***Font:** INE, EPA*<br>*Elaboració pròpia*")) %>%
+    tab_style(style = cell_text(color = "firebrick", size = "large", align = "center"), locations = cells_title()) %>%
+    tab_style(style = cell_fill(color = "gray95"), locations = cells_column_spanners(spanners = c("Milers de persones" , "Percentatges del total"))) %>%
+    tab_style(style = cell_text(color = "firebrick", size = "large", align = "center" , weight = "bolder"), locations = cells_column_spanners(spanners = c("Milers de persones" , "Percentatges del total"))) %>%
+    tab_style(style = cell_fill(color = "gray95"), locations = cells_title()) %>%
+    tab_style(style = cell_text(color = "firebrick", size = "normal", align = "center" , weight = "bolder"), locations = cells_column_labels(columns = c("Sector" , "ano1978" , "ano2003" , "ano2019" , "por1978" , "por2003" , "por2019"))) %>%
+    tab_style(style = cell_fill(color = "gray95"), locations = cells_column_labels(columns = c("Sector" , "ano1978" , "ano2003" , "ano2019" , "por1978" , "por2003" , "por2019"))) %>%
+    tab_style(style = cell_text(weight = "bold"), locations = cells_data(columns = c("ano1978" , "ano2003" , "ano2019" , "por1978" , "por2003" , "por2019"), rows = 7)) %>%
+    tab_style(style = cell_fill(color = "gray95"), locations = cells_data(columns = c("Sector"))) %>%
+    tab_style(style = cell_text(color = "firebrick" , style = "italic"), locations = cells_data(columns = c("Sector")))
+
+p
+}
+```
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Com es veu al Quadre 6, la xifra en milers de persones s’ha mantingut estable en autònoms, ha baixat notablement en l’ajuda en el negoci familiar i ha augmentat en la resta de situacions des de 1978. Però tot i aquests canvis en les xifres de milers de persones, com s’ha dit abans, el nombre total d’ocupats ha augmentat prou, així que per obtenir un anàlisi més precís sobre l’evolució de la distribució dels ocupats l’anàlisi es centra en les xifres de percentatges que cada categoria representa sobre el total.    
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Trobem dues situacions que s’han reduït prou des de 1978, que són la situació d’autònom o empresari sense assalariats i l’ajuda en empresa o negoci familiar. La disminució d’aquesta segona situació està estretament relacionada amb la professionalització de l’economia i l’especialització de molts sectors. Al 1978 la majoria d’aquestes tasques es feien a mà o amb ferraments poc complexes (açò es pot aplicar a molts sectors), amb una corba d’aprenentatge molt ràpida. Amb aquesta situació, pràcticament qualsevol persona podia realitzar aquests treballs, i açò sumat a que no es tenia tant en consideració la importància dels estudis, molts dels joves ajudaven a les tasques de l’empresa familiar. Com es pot veure, actualment són molt pocs els ocupats en ajuda a l’empresa familiar, cosa que principalment es deu a la major tecnificació dels treballs. Les mateixes tasques que en 1978 es feien principalment amb mà d’obra sense entrenar i amb poca complementarietat de capital fixe, ara es realitzen amb persones qualificades i amb capital físic específic.    
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Només entenent aquest procés d’especialització i tecnificació s’entén la baixada d’ocupats que ajuden en empreses familiars, la pujada d’assalariats del sector privat i la baixada d’autònoms sobre el total. Processos que abans feia un sols autònom són cada vegada més comuns que es divideixen en tasques més tècniques dins d’una empresa amb més d’un treballador.    
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;El cas de l’augment del percentatge de treballadors del sector públic molt probablement es deu a l’augment del grandària del sector públic sumada a que les tasques que realitza són en la seua majoria intensives en mà d’obra, però no sols a açò. Existeix el que s’anomena la “malaltia de Baumol”, que tal i com explica Baumol (1966), el progrés tècnic introdueix avanços en alguns sectors, fent que augmente la seua productivitat dels seus inputs i, en concret, la productivitat del treball (augmenta la quantitat d’output per quantitat d’input laboral). Aquests sectors s’anomenen progressius i són, en general, la indústria i l’agricultura. En altres sectors com el de serveis, açò no és possible per la no existència de produccions estandarditzades o pels serveis personals. Els autors parlen en el llibre del sector de l’art i dels espectacles en directe i conclouen que aquests sectors que pateixen aquesta malaltia o bé perdran qualitat o bé passaran a desaparèixer. Però passa una cosa peculiar amb els serveis que ofereix el sector públic i és que al ser d’una demanda molt inelàstica amb el preu (com la neteja del carrer o la seguretat) o d’una elevada elasticitat-renda (com ho seria l’educació o sanitat de qualitat), si es vol mantenir constant l’output relatiu o si es vol augmentar (com ha passat a Espanya des del 1978 i 2003), el treball en el sector progressiu acabarà transvasant-se al sector no progressiu. Açò és exactament el que ha passat a Espanya des del 1978 i 2003, que sectors progressius com el de l’agricultura o la indústria han transvasat treball al sector no progressiu com ho són molts serveis i, entre ells, el sector públic.    
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Amb el pas del temps, la teoria de Baumol (1966) prediu que els treballs dels sectors no progressius es faran d’una manera més precària (amb salaris més baixos comparats amb els dels treballs dels sectors sí progressius), d’una pitjor qualitat i que finalment poden aplegar a desaparèixer (si la societat no els valora). Si es volen mantenir aquests serveis s’encariran en comparació als béns i serveis de sectors sí progressius.    
+
+
+## <FONT COLOR="darkred">6. EVOLUCIÓ DE L'ATUR</FONT>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L’últim aspecte a analitzar en aquest TFG per acabar de caracteritzar el mercat de treball espanyol és l’atur. Aquest apartat es centra en veure com han canviat les magnituds de l’atur i, sobretot, les seues taxes. Es farà especial èmfasi en la desigualtat d’atur entre persones amb diferent relació amb la persona de referència i entre persones de diferents comunitats autònomes. Es tractarà de veure si en Espanya hi ha convergència entre comunitats, si hi ha convergència entre sexes i donar una breu explicació econòmica de per què s’ha donat aquesta convergència o no s’ha donat.    
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;En primer lloc, tenim el Gràfic 6, que ens mostra les taxes d’atur de les dones i dels homes per comunitats autònomes. Tal i com es pot veure al gràfic, en totes les comunitats autònomes i tots els anys, les dones tenen una taxa d’atur superior a la dels homes, i tot i que cabria esperar que aquesta taxa es vaja reduint a mesura que passa el temps (i així ho ha fet en 2019), en 2003 la diferència entre homes i dones era substancialment superior a la de 1978, cosa que segurament es puga deure a que com ja s’ha vist abans en altre apartat, en 1978 les dones directament no buscaven treball fora de la llar i en canvi, en 2003 sí que ho feien. Afortunadament, aquesta diferència sembla anar reduint-se amb el pas dels anys.    
+
+
+<input type=button class=hideshow></input>
+
+```{r 11 , echo = FALSE}
+# 13. Taxa de paro por sexo y comunidad autónoma de residencia
+{
+  ii <- ciclo_elegido
+
+zz1 <- df %>% filter(CICLO == ii , NIVEL == 1) %>%
+  filter(AOI == 3 | AOI == 4 | AOI == 5 | AOI == 6) %>%
+  group_by(CICLO , SEXO1 , CCAA) %>%
+  summarise("Total" = sum(FACTOREL , na.rm = FALSE)) %>%
+  ungroup()
+
+aa <- df %>% filter(CICLO == ii , NIVEL == 1) %>%
+  filter(AOI == 5 | AOI == 6) %>%
+  group_by(CICLO , SEXO1 , CCAA) %>%
+  summarise("Percentatge" = sum(FACTOREL , na.rm = FALSE)) %>%
+  ungroup() %>%
+  mutate(Percentatge = Percentatge*100/zz1$Total)
+
+x <- c(153 , 173 , 133)
+
+  for (ii in x) {
+    zz1 <- df %>% filter(CICLO == ii , NIVEL == 1) %>%
+  filter(AOI == 3 | AOI == 4 | AOI == 5 | AOI == 6) %>%
+  group_by(CICLO , SEXO1 , CCAA) %>%
+  summarise("Total" = sum(FACTOREL , na.rm = FALSE)) %>%
+  ungroup()
+   aa1 <- df %>% filter(CICLO == ii , NIVEL == 1) %>%
+  filter(AOI == 5 | AOI == 6) %>%
+  group_by(CICLO , SEXO1 , CCAA) %>%
+  summarise("Percentatge" = sum(FACTOREL , na.rm = FALSE)) %>%
+  ungroup() %>%
+  mutate(Percentatge = Percentatge*100/zz1$Total)
+
+    aa <- bind_rows(aa , aa1)
+    }
+
+aa <- aa %>% mutate(Any = gsub(x = CICLO , pattern = 133 , replacement = "2005")) %>%
+  mutate(Any = gsub(x = Any , pattern = 153 , replacement = "2010")) %>%
+  mutate(Any = gsub(x = Any , pattern = 173 , replacement = "2015")) %>%
+  mutate(Any = gsub(x = Any , pattern = ciclo_elegido , replacement = "2019")) %>%
+  select(Any , CCAA , SEXO1 , Percentatge)
+
+newRow1 <- data.frame(Any = "1978" , CCAA = c(1:17,51,52) , Percentatge = c(11.9 , 3.5 , 4.3 , 4.2 , 9.2 , 5.3 , 3.9 , 5 , 5.8 , 4.1 , 9.8 , 3.2 , 7.3 , 4.1 , 2.8 , 5.2 , 2.2 , 0 , 0) , SEXO1 = "Home")
+newRow2 <- data.frame(Any = "1978" , CCAA = c(1:17,51,52) , Percentatge = c(12.3 , 7.2 , 5.1 , 4.2 , 10.2 , 3.8 , 7.4 , 8.8 , 6.4 , 5.3 , 10 , 2.3 , 9.1 , 9.9 , 7 , 11.8 , 2.8 , 0 , 0) , SEXO1 = "Dona")
+newRow3 <- data.frame(Any = "2003" , CCAA = c(1:17,51,52) , Percentatge = c(3.7 , 4.6 , 9 , 7.5 , 10.5 , 8.6 , 6.9 , 7 , 7.4 , 8.3 , 15.4 , 9.3 , 6.5 , 7.4 , 3.7 , 6.8 , 4.1 , 0 , 0) , SEXO1 = "Home")
+newRow4 <- data.frame(Any = "2003" , CCAA = c(1:17,51,52) , Percentatge = c(30.1 , 12.4 , 19.5 , 11.8 , 17.6 , 18.5 , 21.7 , 21.9 , 12.6 , 16.9 , 32.7 , 19.8 , 12.6 , 15.8 , 8.4 , 14.4 , 12.9 , 0 , 0) , SEXO1 = "Dona")
+
+aa_def <- bind_rows(aa , newRow1 , newRow2 , newRow3 , newRow4)
+aa_def <- aa_def %>% mutate(CCAA = gsub(pattern = 10 , replacement = "Comunitat Valenciana" , x = CCAA)) %>%
+  mutate(CCAA = gsub(pattern = 11 , replacement = "Extremadura" , x = CCAA)) %>%
+  mutate(CCAA = gsub(pattern = 12 , replacement = "Galícia" , x = CCAA)) %>%
+  mutate(CCAA = gsub(pattern = 13 , replacement = "Madrid, Comunidad de" , x = CCAA)) %>%
+  mutate(CCAA = gsub(pattern = 14 , replacement = "Murcia, Regió de" , x = CCAA)) %>%
+  mutate(CCAA = gsub(pattern = 15 , replacement = "Navarra" , x = CCAA)) %>%
+  mutate(CCAA = gsub(pattern = 16 , replacement = "País Vasc" , x = CCAA)) %>%
+  mutate(CCAA = gsub(pattern = 17 , replacement = "Rioja, La" , x = CCAA)) %>%
+  mutate(CCAA = gsub(pattern = 51 , replacement = "Ceuta" , x = CCAA)) %>%
+  mutate(CCAA = gsub(pattern = 52 , replacement = "Melilla" , x = CCAA)) %>%
+  mutate(CCAA = gsub(pattern = 1 , replacement = "Andalusia" , x = CCAA)) %>%
+  mutate(CCAA = gsub(pattern = 2 , replacement = "Aragó" , x = CCAA)) %>%
+  mutate(CCAA = gsub(pattern = 3 , replacement = "Asturies, Principat d'" , x = CCAA)) %>%
+  mutate(CCAA = gsub(pattern = 4 , replacement = "Balears, Illes" , x = CCAA)) %>%
+  mutate(CCAA = gsub(pattern = 5 , replacement = "Canaries" , x = CCAA)) %>%
+  mutate(CCAA = gsub(pattern = 6 , replacement = "Cantàbria" , x = CCAA)) %>%
+  mutate(CCAA = gsub(pattern = 7 , replacement = "Castella i Lleó" , x = CCAA)) %>%
+  mutate(CCAA = gsub(pattern = 8 , replacement = "Castella-La Manxa" , x = CCAA)) %>%
+  mutate(CCAA = gsub(pattern = 9 , replacement = "Catalunya" , x = CCAA))
+
+aa_def <- aa_def %>% filter(Any %in% c("1978" , "2003" , "2019")) %>%
+  pivot_wider(names_from = Any , names_prefix = "ano" , values_from = Percentatge)
+
+aa_Home <- aa_def %>% filter(SEXO1 == "Home") %>%
+  arrange(ano2019) %>%
+  pivot_longer(cols = 3:5 , names_to = "Any" , values_to = "Percentatge") %>%
+  mutate(CCAA = forcats::as_factor(CCAA)) %>%
+  select(CCAA , Any , Percentatge.Home = Percentatge)
+
+aa_Dona <- aa_def %>% filter(SEXO1 == "Dona") %>%
+  pivot_longer(cols = 3:5 , names_to = "Any" , values_to = "Percentatge") %>%
+  mutate(CCAA = forcats::as_factor(CCAA)) %>%
+  select(CCAA , Any , Percentatge.Dona = Percentatge)
+
+aa_def <- left_join(aa_Home , aa_Dona)
+aa_def <- aa_def %>% pivot_longer(cols = 3:4 , names_to = "Sexo" , values_to = "Percentatge") %>%
+  mutate(Any = gsub(x = Any , pattern = "ano" , replacement = "")) %>%
+  mutate(Sexo = gsub(x = Sexo , pattern = "Percentatge.Home" , replacement = "Home")) %>%
+  mutate(Sexo = gsub(x = Sexo , pattern = "Percentatge.Dona" , replacement = "Dona")) %>%
+  mutate(CCAA = forcats::as_factor((CCAA)))
+
+p <- ggplot(data = aa_def , mapping = aes(x = CCAA , y = Percentatge , fill = Any)) +
+  geom_col(position = "dodge") +
+  facet_grid(rows = vars(Sexo)) +
+  labs(title = "GRÀFIC 6: TAXA D'ATUR PER SEXE I COMUNITAT AUTÒNOMA DE RESIDÈNCIA EN ESPANYA EN 1978, 2003 Y 2019" , caption = "Font: INE, EPA. Elaboració pròpia" , x = NULL , y = NULL) +
+  theme(plot.caption = element_text(face = "italic", colour = "gray24") ,
+    plot.title = element_text(size = 14 , face = "bold", colour = "firebrick") ,
+    panel.background = element_rect(fill = "gray80", colour = "snow4") ,
+    axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_x_discrete() +
+  scale_y_continuous(breaks = seq(0 , 40 , 2)) +
+  scale_fill_brewer(palette = "Reds") +
+  scale_color_brewer(palette = "Blues")
+options(digits = 2)
+ggplotly(p , tooltip = c("Any" ,  "Percentatge" , "CCAA"))
+}
+```
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;La segona cosa que destaca del gràfic és l’augment de la taxa d’atur general en ambdós sexes i en totes les comunitats autònomes. Espanya compta amb una de les taxes d’atur més altes de tota Europa. Aquesta taxa d’atur està molt correlacionada amb el cicle econòmic del moment i la crisi de 2008 i posteriors anys va elevar la taxa d’atur fins a xifres sobre el 25% i en moltes comunitats per sobre d’aquestes xifres. Tot i estar en un període d’expansió i recuperació, encara la taxa d’atur no s’ha recuperat en moltes comunitats. Molts d’aquests són aturats de llarga duració i quant més temps passa sense que troben treball, menor és la seua probabilitat d’inserció en el mercat laboral. El cas és que encara que la taxa d’atur siga cíclica, un llarg període de temps amb una taxa d’atur alta pot fer-la estructural i que els salaris i la inflació augmenten tot i tindre una taxa d’atur alta.    
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Per últim però no menys important és destacar la diferència entre les taxes d’atur regionals, que no només són altes, sinó que en molts casos, s’han accentuat i no semblen convergir.    
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;En el Gràfic 6 es veu la desigualtat entre regions i al Quadre 7 i Gràfic 5 veurem la desigualtat segons la persona de referència. Donat que assumim que la distribució de les persones segons el tipus de relació amb la persona de referència[^5]  i el sexe estan distribuïdes de manera aleatòria i independent en el territori, aquestes desigualtats no es relacionen amb la desigualtat entre regions, sinó que són independents una de l’altra i es deuen a causes diferents.    
+
+
+
+```{r 12 , echo = FALSE}
+# 11. Distribución del paro según la relación con la persona de referencia
+{
+aa <- df %>% filter(CICLO == ciclo_elegido) %>%
+  filter(AOI == 5 | AOI == 6) %>%
+  mutate(ANO = 2019) %>%
+  group_by(RELPP1 , SEXO1 , ANO) %>%
+  summarise(Total = sum(FACTOREL , na.rm = FALSE)) %>%
+  ungroup() %>%
+  mutate(RELPP1 = gsub(pattern = 4 , replacement = 4 , x = RELPP1)) %>%
+  mutate(RELPP1 = gsub(pattern = 5 , replacement = 4 , x = RELPP1)) %>%
+  mutate(RELPP1 = gsub(pattern = 6 , replacement = 4 , x = RELPP1)) %>%
+  mutate(RELPP1 = gsub(pattern = 7 , replacement = 4 , x = RELPP1)) %>%
+  mutate(RELPP1 = gsub(pattern = 8 , replacement = 4 , x = RELPP1)) %>%
+  mutate(RELPP1 = gsub(pattern = 9 , replacement = 4 , x = RELPP1)) %>%
+  group_by(ANO , SEXO1 , RELPP1) %>%
+  summarise("Total" = sum(Total , na.rm = FALSE)) %>%
+  ungroup() %>%
+  arrange(RELPP1)
+
+newRow1 <- data.frame(ANO = c(1978 , 1978 , 1978 , 1978 , 1978 , 1978 , 1978 , 1978) , RELPP1 = as.character(c(1 , 1 , 2 , 2 , 3 , 3 , 4 , 4)) , Total = c(259200 , 8300 , 400 , 40700 , 295300 , 211800 , 43900 , 18200) , SEXO1 = c("Home" , "Dona" , "Home" , "Dona" , "Home" , "Dona" , "Home" , "Dona"))
+newRow2 <- data.frame(ANO = c(2003 , 2003 , 2003 , 2003 , 2003 , 2003 , 2003 , 2003) , RELPP1 = as.character(c(1 , 1 , 2 , 2 , 3 , 3 , 4 , 4)) , Total = c(389500 , 185800 , 40700 , 675200 , 529600 , 525300 , 59700 , 54600) , SEXO1 = c("Home" , "Dona" , "Home" , "Dona" , "Home" , "Dona" , "Home" , "Dona"))
+
+aa <- bind_rows(aa , newRow1 , newRow2)
+aa <- aa %>% mutate(SEXO1 = gsub(pattern = "Home" , replacement = "Home" , x = SEXO1)) %>%
+  mutate(SEXO1 = gsub(pattern = "Dona" , replacement = "Dona" , x = SEXO1)) %>%
+  mutate(RELPP1 = gsub(pattern = "1" , replacement = "Persona referència" , x = RELPP1)) %>%
+  mutate(RELPP1 = gsub(pattern = "2" , replacement = "Cònjuge" , x = RELPP1)) %>%
+  mutate(RELPP1 = gsub(pattern = "3" , replacement = "Fill" , x = RELPP1)) %>%
+  mutate(RELPP1 = gsub(pattern = "4" , replacement = "Altres situacions" , x = RELPP1)) %>%
+  unite(RELPP1, RELPP1:SEXO1, sep = " ") %>%
+  pivot_wider(names_from = ANO , values_from = Total , names_prefix = "ano")
+newRow3 <- data.frame(RELPP1 = "Total" , ano2003 = sum(aa$ano2003 , na.rm = FALSE) , ano1978 = sum(aa$ano1978 , na.rm = FALSE) , ano2019 = sum(aa$ano2019 , na.rm = FALSE))
+aa <- bind_rows(aa , newRow3)
+aa <- aa %>% mutate(por1978 = ano1978/newRow3$ano1978 , por2003 = ano2003/newRow3$ano2003 , por2019 = ano2019/newRow3$ano2019) %>%
+  mutate(ano1978 = ano1978/1000 , ano2003 = ano2003/1000 , ano2019 = ano2019/1000 , por1978 = por1978 , por2003 = por2003 , por2019 = por2019) %>%
+  select(RELPP1 , ano1978 , ano2003 , ano2019 , por1978 , por2003 , por2019)
+
+options(digits = 4)
+
+p <- aa %>% gt() %>%
+    tab_header(title = md("**QUADRE 7: DISTRIBUCIÓ DE L'ATUR SEGONS LA RELACIÓ AMB LA PERSONA DE REFERÈNCIA EN ESPANYA, 1978, 2003 Y 2019**")) %>%
+    cols_label(RELPP1 = "Relació amb la persona de referència i sexe" , ano1978 = "1978" , ano2003 = "2003" , ano2019 = "2019" , por1978 = "1978" , por2003 = "2003" , por2019 = "2019") %>%
+    fmt_percent(columns = c("por1978" , "por2003" , "por2019")) %>%
+    tab_spanner(label = "Milers de persones", columns = c("ano1978" , "ano2003" , "ano2019"), gather = TRUE) %>%
+    tab_spanner(label = "Percentatges del total", columns = c("por1978" , "por2003" , "por2019"), gather = TRUE) %>%
+    tab_source_note(source_note = md("***Font:** INE, EPA*<br>*Elaboració pròpia*")) %>%
+    tab_style(style = cell_text(color = "firebrick", size = "large", align = "center"), locations = cells_title()) %>%
+    tab_style(style = cell_fill(color = "gray95"), locations = cells_column_spanners(spanners = c("Milers de persones" , "Percentatges del total"))) %>%
+    tab_style(style = cell_text(color = "firebrick", size = "large", align = "center" , weight = "bolder"), locations = cells_column_spanners(spanners = c("Milers de persones" , "Percentatges del total"))) %>%
+    tab_style(style = cell_fill(color = "gray95"), locations = cells_title()) %>%
+    tab_style(style = cell_text(color = "firebrick", size = "normal", align = "center" , weight = "bolder"), locations = cells_column_labels(columns = c("RELPP1" , "ano1978" , "ano2003" , "ano2019" , "por1978" , "por2003" , "por2019"))) %>%
+    tab_style(style = cell_fill(color = "gray95"), locations = cells_column_labels(columns = c("RELPP1" , "ano1978" , "ano2003" , "ano2019" , "por1978" , "por2003" , "por2019"))) %>%
+    tab_style(style = cell_text(weight = "bold"), locations = cells_data(columns = c("ano1978" , "ano2003" , "ano2019" , "por1978" , "por2003" , "por2019"), rows = 9)) %>%
+    tab_style(style = cell_fill(color = "gray95"), locations = cells_data(columns = c("RELPP1"))) %>%
+    tab_style(style = cell_text(color = "firebrick" , style = "italic"), locations = cells_data(columns = c("RELPP1")))
+
+p
+}
+```
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;El primer tret característic a destacar del Quadre 7 es ve donant en tot el treball. L’entrada de la dona en el mercat de treball ha suposat grans canvis com el fet de que milers de dones han passat a ser la persona de referència en la seua llar i que, en molts casos estan a l’atur. Les xifres d’atur de les persones de referència s’han igualat entre homes i dones, i en ambdós casos han augmentat notablement.    
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;És destacable que en 1978 quasi el 70 % dels aturats eren homes, és a dir, la gran majoria, mentre que en 2019 no apleguen ni a la meitat del total d’aturats (47 % aproximadament). A més a més, en general, els fills han deixat d’estar actius al mercat de treball per la major durada de l’etapa d’estudiant, cosa que ha acabat per provocar una caiguda en el percentatge que aquests representen sobre el total.    
+
+
+<input type=button class=hideshow></input>
+
+```{r 13 , echo = FALSE}
+# 12. Taxa de paro según la persona de referencia
+{
+  ii <- 133
+
+zz1 <- df %>% filter(CICLO == ii , NIVEL == 1) %>%
+  filter(AOI == 3 | AOI == 4 | AOI == 5 | AOI == 6) %>%
+  mutate(RELPP1 = gsub(pattern = 4 , replacement = 4 , x = RELPP1)) %>%
+  mutate(RELPP1 = gsub(pattern = 5 , replacement = 4 , x = RELPP1)) %>%
+  mutate(RELPP1 = gsub(pattern = 6 , replacement = 4 , x = RELPP1)) %>%
+  mutate(RELPP1 = gsub(pattern = 7 , replacement = 4 , x = RELPP1)) %>%
+  mutate(RELPP1 = gsub(pattern = 8 , replacement = 4 , x = RELPP1)) %>%
+  mutate(RELPP1 = gsub(pattern = 9 , replacement = 4 , x = RELPP1)) %>%
+  group_by(CICLO , SEXO1 , RELPP1) %>%
+  summarise("Total" = sum(FACTOREL , na.rm = FALSE)) %>%
+  ungroup() %>%
+  arrange(RELPP1)
+
+aa <- df %>% filter(CICLO == ii , NIVEL == 1) %>%
+  filter(AOI == 5 | AOI == 6) %>%
+  mutate(RELPP1 = gsub(pattern = 4 , replacement = 4 , x = RELPP1)) %>%
+  mutate(RELPP1 = gsub(pattern = 5 , replacement = 4 , x = RELPP1)) %>%
+  mutate(RELPP1 = gsub(pattern = 6 , replacement = 4 , x = RELPP1)) %>%
+  mutate(RELPP1 = gsub(pattern = 7 , replacement = 4 , x = RELPP1)) %>%
+  mutate(RELPP1 = gsub(pattern = 8 , replacement = 4 , x = RELPP1)) %>%
+  mutate(RELPP1 = gsub(pattern = 9 , replacement = 4 , x = RELPP1)) %>%
+  group_by(CICLO , SEXO1 , RELPP1) %>%
+  summarise("Percentatge" = sum(FACTOREL , na.rm = FALSE)) %>%
+  ungroup() %>%
+  arrange(RELPP1) %>%
+  mutate(Percentatge = Percentatge*100/zz1$Total)
+
+x <- c(153 , 173 , ciclo_elegido)
+
+for (ii in x) {
+    zz1 <- df %>% filter(CICLO == ii , NIVEL == 1) %>%
+  filter(AOI == 3 | AOI == 4 | AOI == 5 | AOI == 6) %>%
+  mutate(RELPP1 = gsub(pattern = 4 , replacement = 4 , x = RELPP1)) %>%
+  mutate(RELPP1 = gsub(pattern = 5 , replacement = 4 , x = RELPP1)) %>%
+  mutate(RELPP1 = gsub(pattern = 6 , replacement = 4 , x = RELPP1)) %>%
+  mutate(RELPP1 = gsub(pattern = 7 , replacement = 4 , x = RELPP1)) %>%
+  mutate(RELPP1 = gsub(pattern = 8 , replacement = 4 , x = RELPP1)) %>%
+  mutate(RELPP1 = gsub(pattern = 9 , replacement = 4 , x = RELPP1)) %>%
+  group_by(CICLO , SEXO1 , RELPP1) %>%
+  summarise("Total" = sum(FACTOREL , na.rm = FALSE)) %>%
+  ungroup() %>%
+  arrange(RELPP1)
+   aa1 <- df %>% filter(CICLO == ii , NIVEL == 1) %>%
+  filter(AOI == 5 | AOI == 6) %>%
+  mutate(RELPP1 = gsub(pattern = 4 , replacement = 4 , x = RELPP1)) %>%
+  mutate(RELPP1 = gsub(pattern = 5 , replacement = 4 , x = RELPP1)) %>%
+  mutate(RELPP1 = gsub(pattern = 6 , replacement = 4 , x = RELPP1)) %>%
+  mutate(RELPP1 = gsub(pattern = 7 , replacement = 4 , x = RELPP1)) %>%
+  mutate(RELPP1 = gsub(pattern = 8 , replacement = 4 , x = RELPP1)) %>%
+  mutate(RELPP1 = gsub(pattern = 9 , replacement = 4 , x = RELPP1)) %>%
+  group_by(CICLO , SEXO1 , RELPP1) %>%
+  summarise("Percentatge" = sum(FACTOREL , na.rm = FALSE)) %>%
+  ungroup() %>%
+  arrange(RELPP1) %>%
+  mutate(Percentatge = Percentatge*100/zz1$Total)
+
+    aa <- bind_rows(aa , aa1)
+    }
+
+aa <- aa %>% mutate(Any = gsub(x = CICLO , pattern = 133 , replacement = "2005")) %>%
+  mutate(Any = gsub(x = Any , pattern = 153 , replacement = "2010")) %>%
+  mutate(Any = gsub(x = Any , pattern = 173 , replacement = "2015")) %>%
+  mutate(Any = gsub(x = Any , pattern = ciclo_elegido , replacement = "2019")) %>%
+  mutate(Relacion = RELPP1 , Sexo = SEXO1) %>%
+  select(Any , Relacion , Sexo , Percentatge)
+
+newRow1 <- data.frame(Any = as.character(c(1978 , 1978 , 1978 , 1978 , 1978 , 1978 , 1978 , 1978)) , Relacion = as.character(c(1 , 1 , 2 , 2 , 3 , 3 , 4 , 4)) , Percentatge = c(3.9 , 2.2 , 8.4 , 2.7 , 13.2 , 14.1 , 6.7 , 4.2) , Sexo = c("Home" , "Dona" , "Home" , "Dona" , "Home" , "Dona" , "Home" , "Dona"))
+newRow2 <- data.frame(Any = as.character(c(2003 , 2003 , 2003 , 2003 , 2003 , 2003 , 2003 , 2003)) , Relacion = as.character(c(1 , 1 , 2 , 2 , 3 , 3 , 4 , 4)) , Percentatge = c(5.8 , 13.4 , 6 , 17.3 , 16.2 , 23.2 , 12.3 , 17.9) , Sexo = c("Home" , "Dona" , "Home" , "Dona" , "Home" , "Dona" , "Home" , "Dona"))
+
+aa_def <- bind_rows(aa , newRow1 , newRow2)
+aa_def <- aa_def %>% mutate(Sexo = gsub(pattern = "Home" , replacement = "Home" , x = Sexo)) %>%
+  mutate(Sexo = gsub(pattern = "Dona" , replacement = "Dona" , x = Sexo)) %>%
+  mutate(Relacion = gsub(pattern = "1" , replacement = "Persona referència" , x = Relacion)) %>%
+  mutate(Relacion = gsub(pattern = "2" , replacement = "Cònjuge" , x = Relacion)) %>%
+  mutate(Relacion = gsub(pattern = "3" , replacement = "Fill" , x = Relacion)) %>%
+  mutate(Relacion = gsub(pattern = "4" , replacement = "Altres situacions" , x = Relacion)) %>%
+  unite(Relacion, Relacion:Sexo, sep = "
+ ")
+aa_def <- aa_def %>% filter(Any %in% c("1978" , "2003" , "2019"))
+
+p <- ggplot(data = aa_def , mapping = aes(x = Relacion , y = Percentatge , fill = Any)) +
+  geom_col(position = "dodge") +
+  labs(title = "GRÀFIC 5: TAXA D'ATUR SEGONS LA RELACIÓ AMB LA PERSONA DE REFERÈNCIA EN ESPAÑA, 1978, 2003 Y 2019" , caption = "Font: INE, EPA. Elaboració pròpia" , x = NULL , y = NULL) +
+  theme(plot.caption = element_text(face = "italic", colour = "gray24") ,
+    plot.title = element_text(size = 14 , face = "bold", colour = "firebrick") ,
+    panel.background = element_rect(fill = "gray80", colour = "snow4")) +
+  scale_x_discrete() +
+  scale_y_continuous(breaks = seq(0 , 30 , 5) , labels = c("0%" , "5%" , "10%" , "15%" , "20%" , "25%" , "30%")) +
+  scale_fill_brewer(palette = "Reds")
+options(digits = 2)
+ggplotly(p , tooltip = c("Any" ,  "Percentatge"))
+}
+```
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;El Gràfic 5 ens dona una altra perspectiva sobre el que es comentava abans al Quadre 7. Es veu un augment generalitzat de la taxa d’atur en quasi totes les situacions, una mica de convergència entre sexes en la mateixa situació, com per exemple en fills o en persona de referència o en altres situacions, i es veu un canvi de situació en el cas dels cònjuges, ja que l’atur del cònjuge home ha passat de ser el doble que el de les cònjuges dones en 1978 a ser aproximadament la meitat en 2019.    
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Aquestes dades responen principalment a la generalització del treball de la dona. En 1978, moltes dones no estaven actives al mercat de treball i les que estaven era perquè tenien la seguretat de trobar un lloc de treball. Tot i que existia una proporció elevada de dones que sí buscava treball fora de la llar, aquest no era es cas més comú, tal i com hem vist a l’apartat de taxes d’activitat. Al llarg dels anys, s’ha anat estenent el treball de la dona fora de la llar i en l’actualitat la taxa d’activitat de les dones quasi acaba de convergir amb la dels homes, però degut a diverses causes (l’estudi de les quals podria ser un TFG complet) a les dones actives li costa trobar més treball, tal i com demostren les xifres i les taxes d’atur dividides per sexe.    
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Segons la teoria convencional, cabria esperar que amb el pas del temps i quan desapareguen els prejudicis i les estructures socials que s’han format al llarg de la història que han diferenciat el potencial d’homes i dones, la convergència en taxes d’atur i el nivell de salaris entre homes i dones es podrà aconseguir.    
+
+
+## <FONT COLOR="darkred">7. CONCLUSIONS</FONT>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L’objectiu que tenia aquest TFG era el de donar una visió general del mercat laboral espanyol al 2019 i poder comparar-la amb aquesta mateixa caracterització dels anys 1978 i 2003. En 1978 Espanya es trobava en una etapa de transició entre un país autoritari i en desenvolupament, a un país democràtic i desenvolupat, com és a l’actualitat. Molts dels trets característics del mercat de treball en 1978 han canviat amb l’assentament de l’estat del benestar i l’extensió del treball de la dona fora de la llar. Es pot dir que pràcticament tot ha canviat al mercat laboral espanyol: les taxes d’activitat, les taxes d’atur, les diferències entre homes i dones, el nombre absolut d’actius, treballadors i aturats, el tipus de treballs que hi ha avui en dia, els sectors on es treballa, l’educació de la població que està al mercat laboral, etcètera. Aquest anàlisi tracta de comparar un mateix país en tres punts distints del temps, però tot i no haver passat tant de temps (41 anys no és tant per als canvis tan significatius que s’han viscut), en alguns aspectes sembla que s’estiguen comparant dos països diferents.    
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Luís Toharia (2003) destaca al seu treball els canvis institucionals viscuts des de l’any 1978 fins el 2003 com el desenvolupament de la negociació col·lectiva, la creació d’instruments moderns de política d’ocupació, inclosa la protecció per desocupació, els mecanismes d’ajust de plantilles de les empreses, la formació ocupacional, etcètera. Però, com hem vist, des de 2003 fins 2019 també hi ha hagut canvis en els que es confirma que moltes de les tendències iniciades en el període 1978-2003 segueixen en el període 2003-2019. Aquestes tendències es poden deure a les mateixes causes, que encara avui en dia tenen repercussió en el desenvolupament econòmic i laboral. Tot i això, cal destacar que des de 2003 fins el 2019 hi ha hagut esdeveniments que, juntament amb els anteriors, han ajudat a forjar el que és el mercat laboral espanyol actual, com l’extensió quasi al complet del treball (o al menys de l’activitat) de les dones fora de la llar, la confirmació i aprofundiment de l’Estat de Benestar (sanitat, pensions, etc.), la major extensió i duració de l’educació bàsica i superior, l’assentament de la nova moneda comunitària (l’Euro) i de la integració en el mercat europeu (a través de la Unió Europea i el seu mercat comú), etcètera.    
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Les causes que provoquen els canvis en el mercat laboral espanyol no s’expliquen amb extensió i profunditat en aquest treball, però l’objectiu perseguit era il·lustrar aquests canvis, no explicar-los.    
+
+
+## <FONT COLOR="darkred">8. BIBLIOGRAFIA</FONT>
+
+- Baumol i Bowen, William G. (1966): "Performing arts, the econòmic dilemma a study of problems common to theater, opera, music and dance". *Cambridge, Mass.* 556 pàgines.  
+
+- Becker, Gary S. (1962): "Investment in human capital: A theoretical analysis." *Journal of Political Economy 70.5, Part 2*, pp. 9-49.  
+
+- Becker, Gary S.(1994): “Human Capital: A theoretical and empirical analysis, with special reference to education, Third edition”. *National Bureau of Economic Research: University Chicago Press*, pp. 161-214.  
+
+- Maroto Sánchez, Andrés (2007): “La productividad en el sector servicios. Un anàlisis económico aplicado”. *Universidad de Alcalá Facultad de Ciencias Económicas y Empresariales*, pp 149-159.  
+
+- Mincer, Jacob (1958): “Investment in Human Capital and Personal Income Distribution”. *Journal of Political Economy, 66(4)*, pp. 281-302.  
+
+- Schultz, Theodore (1972): “Economic Research: Retrospect and Prospect, Volume 6, Human Resources”. *National Bureau of Economic Research*, pp 1-84.  
+
+- Smith, Adam (1776): "An Inquiry into the Nature and Causes of the Wealth of Nations". *Edited by RH Campbell and AS S-inner. New York Oxford University Press. Glasgow Edition and Correspondence of Adam Smith, Vol. II.*  
+
+- Soler i Marco, Vicent (ed.) (2009): "Economía Española y del País Valenciano". *Universitat de València*, pp 139-164.  
+
+- Spence, A. Michael (1973): “Job Market Signaling”. *The Quarterly Journal of Economics, Vol 87, No. 3*, pp. 355-374.  
+
+- Toharia, Luís (2003): “El mercado de Trabajo en España, 1978-2003”. *Información Comercial Española, ICE: Revista de economia, No. 811*, pp. 203-220.  
+
+
+
+
+[^1]: Com es pot veure en [aquest enllaç a les publicacions del FMI](https://www.imf.org/es/Publications/WEO/Issues/2020/04/14/weo-april-2020) 
+[^2]: Com es pot veure en [aquest enllaç a les publicacions del BCE](https://www.ecb.europa.eu/pub/projections/html/ecb.projections202003_ecbstaff~dfa19e18c4.es.html#toc1)
+[^3]: Tal i com destaca el periòdic *The Guardian* en [aquest enllaç](https://www.theguardian.com/business/2020/mar/26/us-unemployment-rate-coronavirus-business)
+[^4]:Tot i que el gràfic sí que ens permet veure aquest efecte de “més anys estudiant”, s’ha de dir que no és del tot precís perquè les dades obertes sobre les enquestes que ofereix l’INE gratuïtament agrupen l’edat per quinquennis, aleshores el valor que apareix per als de 16 anys és la mitjana del valor per als de 16 a 19 anys, el valor que apareix per als de 20 és la mitjana dels de 20 a 24 i així successivament, mentre que els valors de 1978 i 2003 sí són per edats sense agrupar. Aquesta és la causa de que 2003 semble estar més dalt que 2005 o 2010. Si no considerarem el 2003 i agafarem 2005 com a aproximació de 2003 sí es veu aquesta evolució cap a més percentatge d’estudiants dins de la població jove. A més, si 1978 estiguera agrupat, l’evolució hi seria més evident encara.
+[^5]: Segons la definició de l’INE, aquesta és aquella persona de 16 o més anys a la que consideren com a tal els restants membres de la llar per la seua edat, per ser la que sustenta econòmicament la llar o per altres raons. En cas de dubte, es pren com a persona de referència al actiu de major edat. Les taxes d’atur es calculen amb relació a la població activa de 16 i més anys corresponent al col·lectiu de que es tracte.
+
+
+<script>
+$( "input.hideshow" ).each( function ( index, button ) {
+  button.value = 'Ocultar';
+  $( button ).click( function () {
+    var target = this.nextSibling ? this : this.parentNode;
+    target = target.nextSibling.nextSibling;
+    if ( target.style.display == 'block' || target.style.display == '' ) {
+      target.style.display = 'none';
+      this.value = 'Mostrar';
+    } else {
+      target.style.display = 'block';
+      this.value = 'Ocultar';
+    }
+  } );
+} );
+</script>
